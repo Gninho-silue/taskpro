@@ -1,4 +1,4 @@
-package com.taskpro.backend;
+package com.taskpro;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
