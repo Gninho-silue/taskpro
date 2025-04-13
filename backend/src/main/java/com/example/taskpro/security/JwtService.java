@@ -1,4 +1,4 @@
-package com.example.taskpro.service;
+package com.example.taskpro.security;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;

@@ -1,4 +1,4 @@
-package com.example.taskpro.config;
+package com.example.taskpro.security;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
