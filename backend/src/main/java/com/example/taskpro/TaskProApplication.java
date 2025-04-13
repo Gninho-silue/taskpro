@@ -1,4 +1,4 @@
-package com.taskpro;
+package com.example.taskpro;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

@@ -1,4 +1,4 @@
-package com.taskpro;
+package com.example.taskpro;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
