@@ -1,0 +1,46 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/taskprodb
+    username: taskpro
+    password: taskpro
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+    database: postgresql
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+
+
+  mail:
+    host: localhost
+    port: 1025
+    username: silue
+    password: silue
+    properties:
+      mail:
+        smtp:
+          trust: "*"
+        auth: true
+        starttls:
+          enabled: true
+        connectiontimeout: 5000
+        timeout: 3000
+        writetimeout: 5000
+
+server:
+  port: 8081
+
+logging:
+  level:
+    org.springframework.security: DEBUG
+
+application:
+  security:
+    jwt:
+      secret-key: wPGNMJ/Vag6i23vF7Dc4la3y8IHirOpmoOQ5jZnbepI=
+      expiration: 86400000

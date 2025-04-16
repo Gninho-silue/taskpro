@@ -1,6 +1,5 @@
 package com.example.taskpro.dto;
 
-import jakarta.persistence.ManyToOne;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
@@ -9,6 +8,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.time.LocalDate;
 
 @Data
 @Builder
@@ -22,6 +23,8 @@ public class RegisterRequest {
     @NotEmpty(message = "Lastname is required")
     @NotBlank(message = "Lastname is required")
     private String lastname;
+
+    private LocalDate dateOfBirth;
 
     @Email(message = "Enter a valid email")
     @NotEmpty(message = "Email is required")

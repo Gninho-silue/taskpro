@@ -36,12 +36,9 @@ public class SecurityConfig {
         http
                 .cors(withDefaults())
                 .csrf(AbstractHttpConfigurer::disable)  // Désactiver CSRF pour tester
-                .headers(headers -> headers
-                        .frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin)
-                )
                 .authorizeHttpRequests(req ->
                         req.requestMatchers(
-                                        "/api/auth/**",
+                                        "/auth/**",
                                         "/h2-console/**"
                                 ).permitAll()
                                 .anyRequest().authenticated()
