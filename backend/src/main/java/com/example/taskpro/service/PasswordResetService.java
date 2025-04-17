@@ -1,5 +1,6 @@
 package com.example.taskpro.service;
 
+import com.example.taskpro.exception.TokenValidationException;
 import com.example.taskpro.model.PasswordResetToken;
 import com.example.taskpro.model.User;
 import com.example.taskpro.repository.PasswordResetTokenRepository;
@@ -30,6 +31,7 @@ public class PasswordResetService {
     public boolean validateToken(String token) {
         return tokenRepository.findByToken(token)
                 .filter(t -> !t.isExpired())
+                .filter(t -> tokenRepository.existsByToken(token))
                 .isPresent();
     }
 
@@ -49,7 +51,7 @@ public class PasswordResetService {
         return tokenRepository.findByToken(token)
                 .filter(t -> !t.isExpired())
                 .map(PasswordResetToken::getUser)
-                .orElseThrow(() -> new RuntimeException("Token invalided ou expired"));
+                .orElseThrow(() -> new TokenValidationException("Token is invalided ou expired"));
     }
 
     public void deleteToken(String token) {

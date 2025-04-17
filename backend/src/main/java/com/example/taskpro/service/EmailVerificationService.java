@@ -1,12 +1,12 @@
 package com.example.taskpro.service;
 
+import com.example.taskpro.exception.TokenValidationException;
 import com.example.taskpro.model.EmailVerificationToken;
 import com.example.taskpro.model.User;
 import com.example.taskpro.repository.EmailVerificationTokenRepository;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
@@ -38,20 +38,22 @@ public class EmailVerificationService {
         return tokenRepository.save(verificationToken);
     }
 
-    public boolean verifyToken(String token) {
-        var optionalToken = tokenRepository.findByToken(token);
-        if (optionalToken.isEmpty()) return false;
+    public void verifyToken(String token) {
+        EmailVerificationToken verificationToken = tokenRepository.findByToken(token)
+                .orElseThrow(() -> new TokenValidationException("Token is invalid or does not exist"));
 
-        EmailVerificationToken verificationToken = optionalToken.get();
-        if (verificationToken.getExpiredAt().isBefore(LocalDateTime.now())) return false;
+        if (verificationToken.getExpiredAt().isBefore(LocalDateTime.now())) {
+            throw new TokenValidationException("Token has expired");
+        }
 
         User user = verificationToken.getUser();
         user.setEnabled(true);
+
         verificationToken.setValidatedAt(LocalDateTime.now());
         verificationToken.setToken(null);
         tokenRepository.save(verificationToken);
-        return true;
     }
+
 
 
 
