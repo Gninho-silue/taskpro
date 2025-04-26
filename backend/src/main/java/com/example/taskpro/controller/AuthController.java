@@ -16,7 +16,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -36,6 +36,7 @@ public class AuthController {
     private final EmailVerificationService emailService;
     private final UserRepository userRepository;
     private final PasswordResetService resetService;
+    private final PasswordEncoder passwordEncoder;
 
     @PostMapping("/register")
     public ResponseEntity<SuccessResponse> register(
@@ -108,7 +109,7 @@ public class AuthController {
         }
 
         User user = resetService.getUserByToken(token);
-        user.setPassword(new BCryptPasswordEncoder().encode(newPassword));
+        user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
         resetService.deleteToken(token);
 

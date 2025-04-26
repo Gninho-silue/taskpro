@@ -1,21 +1,23 @@
 package com.example.taskpro.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
-
 @Entity
-@Data
+@Table(name = "task_attachments")
+@Getter
+@Setter
+@ToString(exclude = {"task", "uploader"})
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "task_attachments")
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = true)
 public class TaskAttachment extends BaseEntity {
 
-
     @Column(nullable = false)
+    @EqualsAndHashCode.Include
     private String fileName;
 
     @Column(nullable = false)
@@ -26,14 +28,13 @@ public class TaskAttachment extends BaseEntity {
 
     private Long fileSize;
 
-
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "task_id", nullable = false)
+    @JsonIgnore
     private Task task;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
+    @JsonIgnore
     private User uploader;
-
 }

@@ -44,3 +44,4 @@ application:
     jwt:
       secret-key: wPGNMJ/Vag6i23vF7Dc4la3y8IHirOpmoOQ5jZnbepI=
       expiration: 86400000
+

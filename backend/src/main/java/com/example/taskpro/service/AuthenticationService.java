@@ -43,6 +43,7 @@ public class AuthenticationService {
                 .password(passwordEncoder.encode(request.getPassword()))
                 .dateOfBirth(request.getDateOfBirth())
                 .accountLocked(false)
+                .preferredLanguage("en")
                 .enabled(false)
                 .role(Role.USER)
                 .build();

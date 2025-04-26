@@ -1,25 +1,28 @@
 package com.example.taskpro.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDateTime;
 
-
 @Entity
-@Data
+@Table(name = "notifications")
+@Getter
+@Setter
+@ToString(exclude = {"user", "relatedTask", "relatedProject"})
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "notifications")
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = true)
 public class Notification extends BaseEntity {
 
     @Column(nullable = false)
+    @EqualsAndHashCode.Include
     private String message;
-    private LocalDateTime sentAt;
 
+    private LocalDateTime sentAt;
 
     @Enumerated(EnumType.STRING)
     private NotificationType type = NotificationType.GENERAL;
@@ -28,15 +31,16 @@ public class Notification extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
+    @JsonIgnore
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "task_id")
+    @JsonIgnore
     private Task relatedTask;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "project_id")
+    @JsonIgnore
     private Project relatedProject;
-
 }
-

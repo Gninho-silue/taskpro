@@ -161,6 +161,16 @@ public class GlobalExceptionHandler {
                 );
     }
 
+//    @ExceptionHandler(EntityNotFoundException.class)
+//    public ResponseEntity<ExceptionResponse> handleException(EmailNotFoundException exp) {
+//        log.warn("Entity not found: {}", exp.getMessage());
+//        return ResponseEntity.status(NOT_FOUND)
+//                .body(
+//                        ExceptionResponse.builder()
+//                                .businessErrorCode()
+//                )
+//    }
+
     @ExceptionHandler(TokenValidationException.class)
     public ResponseEntity<ExceptionResponse> handleException(TokenValidationException exp) {
         return ResponseEntity

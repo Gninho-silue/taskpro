@@ -52,12 +52,14 @@ public class Task extends BaseEntity {
     @JoinColumn(name = "assignee_id")
     private User assignee;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "task", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Comment> comments = new HashSet<>();
 
     @OneToMany(mappedBy = "task", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<TaskAttachment> attachments = new HashSet<>();
 
+    @JsonIgnore
     @ManyToMany
     @JoinTable(
             name = "task_labels",
@@ -71,8 +73,58 @@ public class Task extends BaseEntity {
     @JoinColumn(name = "parent_task_id")
     private Task parentTask;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "parentTask")
     private Set<Task> subtasks = new HashSet<>();
+
+    public void assignToUser(User user) {
+        this.assignee = user;
+        if (user != null) {
+            user.getAssignedTasks().add(this);
+        }
+    }
+
+    public void unassignUser() {
+        if (this.assignee != null) {
+            User oldAssignee = this.assignee;
+            this.assignee = null;
+            oldAssignee.getAssignedTasks().remove(this);
+        }
+    }
+
+    public void setCreator(User creator) {
+        this.creator = creator;
+        if (creator != null) {
+            creator.getCreatedTasks().add(this);
+        }
+    }
+
+    public void addLabel(Label label) {
+        this.labels.add(label);
+        // Si Label a une relation inverse, ajoutez le code correspondant
+    }
+
+    public void removeLabel(Label label) {
+        this.labels.remove(label);
+        // Si Label a une relation inverse, ajoutez le code correspondant
+    }
+
+    public void setParentTask(Task parent) {
+        this.parentTask = parent;
+        if (parent != null) {
+            parent.getSubtasks().add(this);
+        }
+    }
+
+    public void removeParentTask() {
+        if (this.parentTask != null) {
+            Task oldParent = this.parentTask;
+            this.parentTask = null;
+            oldParent.getSubtasks().remove(this);
+        }
+    }
+
+
 
 }
 

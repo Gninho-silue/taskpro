@@ -1,5 +1,6 @@
 package com.example.taskpro.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
@@ -17,6 +18,7 @@ import java.util.Set;
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 public class Project extends BaseEntity {
+
     @Column(nullable = false, unique = true)
     private String name;
 
@@ -32,17 +34,46 @@ public class Project extends BaseEntity {
     private LocalDateTime dueDate;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JsonIgnore
     @JoinColumn(name = "owner_id", nullable = false)
     private User owner;
 
     @ManyToMany(mappedBy = "projects")
+    @JsonIgnore
     private Set<User> members = new HashSet<>();
 
+    @JsonIgnore
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Task> tasks = new HashSet<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "team_id")
     private Team team;
+
+    public void addMember(User user) {
+        this.members.add(user);
+        user.getProjects().add(this);
+    }
+
+    public void removeMember(User user) {
+        this.members.remove(user);
+        user.getProjects().remove(this);
+    }
+
+    public void assignTeam(Team team) {
+        this.team = team;
+        if (team != null) {
+            team.getProjects().add(this);
+        }
+    }
+
+    public void unassignTeam() {
+        if (this.team != null) {
+            Team oldTeam = this.team;
+            this.team = null;
+            oldTeam.getProjects().remove(this);
+        }
+    }
+
 
 }
