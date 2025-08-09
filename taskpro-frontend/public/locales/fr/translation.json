@@ -1,0 +1,113 @@
+{
+  "app": {
+    "name": "TaskPro",
+    "tagline": "Gestion de Tâches Collaborative"
+  },
+  "auth": {
+    "login": "Connexion",
+    "register": "Inscription",
+    "logout": "Déconnexion",
+    "email": "Email",
+    "password": "Mot de passe",
+    "confirmPassword": "Confirmer le mot de passe",
+    "firstName": "Prénom",
+    "lastName": "Nom",
+    "forgotPassword": "Mot de passe oublié ?",
+    "noAccount": "Vous n'avez pas de compte ?",
+    "haveAccount": "Vous avez déjà un compte ?",
+    "signUp": "S'inscrire",
+    "signIn": "Se connecter"
+  },
+  "navigation": {
+    "dashboard": "Tableau de bord",
+    "projects": "Projets",
+    "tasks": "Tâches",
+    "teams": "Équipes",
+    "calendar": "Calendrier",
+    "settings": "Paramètres",
+    "profile": "Profil"
+  },
+  "projects": {
+    "title": "Projets",
+    "create": "Créer un projet",
+    "edit": "Modifier le projet",
+    "delete": "Supprimer le projet",
+    "name": "Nom du projet",
+    "description": "Description",
+    "status": "Statut",
+    "startDate": "Date de début",
+    "dueDate": "Date d'échéance",
+    "members": "Membres",
+    "addMember": "Ajouter un membre",
+    "removeMember": "Retirer un membre",
+    "owner": "Propriétaire",
+    "team": "Équipe",
+    "noProjects": "Aucun projet trouvé"
+  },
+  "tasks": {
+    "title": "Tâches",
+    "create": "Créer une tâche",
+    "edit": "Modifier la tâche",
+    "delete": "Supprimer la tâche",
+    "name": "Nom de la tâche",
+    "description": "Description",
+    "status": "Statut",
+    "priority": "Priorité",
+    "dueDate": "Date d'échéance",
+    "assignee": "Assigné à",
+    "creator": "Créateur",
+    "project": "Projet",
+    "comments": "Commentaires",
+    "attachments": "Pièces jointes",
+    "addComment": "Ajouter un commentaire",
+    "addAttachment": "Ajouter une pièce jointe",
+    "noTasks": "Aucune tâche trouvée",
+    "statuses": {
+      "todo": "À faire",
+      "inProgress": "En cours",
+      "review": "En révision",
+      "done": "Terminé"
+    },
+    "priorities": {
+      "low": "Basse",
+      "medium": "Moyenne",
+      "high": "Haute",
+      "urgent": "Urgente"
+    }
+  },
+  "teams": {
+    "title": "Équipes",
+    "create": "Créer une équipe",
+    "edit": "Modifier l'équipe",
+    "delete": "Supprimer l'équipe",
+    "name": "Nom de l'équipe",
+    "description": "Description",
+    "leader": "Chef d'équipe",
+    "members": "Membres",
+    "addMember": "Ajouter un membre",
+    "removeMember": "Retirer un membre",
+    "noTeams": "Aucune équipe trouvée"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "markAllAsRead": "Marquer tout comme lu",
+    "clearAll": "Tout effacer",
+    "noNotifications": "Aucune notification trouvée"
+  },
+  "common": {
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "view": "Voir",
+    "search": "Rechercher",
+    "filter": "Filtrer",
+    "sort": "Trier",
+    "loading": "Chargement...",
+    "error": "Une erreur est survenue",
+    "success": "Succès",
+    "confirm": "Confirmer",
+    "yes": "Oui",
+    "no": "Non"
+  }
+}
