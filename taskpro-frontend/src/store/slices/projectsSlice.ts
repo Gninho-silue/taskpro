@@ -57,7 +57,7 @@ export const updateProject = createAsyncThunk(
   'projects/updateProject',
   async ({ id, projectData }: { id: number; projectData: Partial<Project> }, { rejectWithValue }) => {
     try {
-      const response = await api.put(`/projects/${id}`, projectData);
+      const response = await api.patch(`/projects/${id}`, projectData);
       return response.data;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Failed to update project');

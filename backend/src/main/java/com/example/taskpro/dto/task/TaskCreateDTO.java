@@ -29,6 +29,7 @@ public class TaskCreateDTO {
     private Integer estimatedHours;
     private Long parentTaskId;
     private Long assigneeId;
+    @NotBlank(message = "Project ID is required")
     private Long projectId;
     private Set<Long> labelIds = new HashSet<>();
 }

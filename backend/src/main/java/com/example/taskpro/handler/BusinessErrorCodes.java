@@ -17,6 +17,8 @@ public enum BusinessErrorCodes {
     EMAIL_NOT_FOUND(306, NOT_FOUND, "Email not found"),
     ACCOUNT_NOT_VERIFIED(307, UNAUTHORIZED, "Account not verified"),
     INVALID_TOKEN(307, UNAUTHORIZED, "Invalid or expired token"),
+    NO_FOUND(404, NOT_FOUND, "Resource not found"),
+
 
     ;
 

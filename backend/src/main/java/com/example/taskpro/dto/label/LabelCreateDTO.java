@@ -2,7 +2,6 @@ package com.example.taskpro.dto.label;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -18,12 +17,9 @@ public class LabelCreateDTO {
     @Size(min = 2, max = 50, message = "Label name must be between 2 and 50 characters")
     private String name;
 
-    @Pattern(regexp = "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$", message = "Color must be a valid hex color code")
+    @NotBlank(message = "Label color is required")
     private String color;
 
     @NotNull(message = "Project ID is required")
     private Long projectId;
-
-
 }
-

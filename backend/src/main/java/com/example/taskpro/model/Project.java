@@ -28,10 +28,11 @@ public class Project extends BaseEntity {
 
 
     @Enumerated(EnumType.STRING)
-    private ProjectStatus status = ProjectStatus.ACTIVE;
+    private ProjectStatus status = ProjectStatus.PLANNING;
 
     private LocalDateTime startDate;
     private LocalDateTime dueDate;
+
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JsonIgnore
@@ -41,6 +42,12 @@ public class Project extends BaseEntity {
     @ManyToMany(mappedBy = "projects")
     @JsonIgnore
     private Set<User> members = new HashSet<>();
+
+    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private Set<Label> labels = new HashSet<>();
+
+
 
     @JsonIgnore
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -72,6 +79,26 @@ public class Project extends BaseEntity {
             Team oldTeam = this.team;
             this.team = null;
             oldTeam.getProjects().remove(this);
+        }
+    }
+
+    /**
+     * Ajoute un label à ce projet
+     */
+    public void addLabel(Label label) {
+        this.labels.add(label);
+        if (label.getProject() != this) {
+            label.setProject(this);
+        }
+    }
+
+    /**
+     * Supprime un label de ce projet
+     */
+    public void removeLabel(Label label) {
+        this.labels.remove(label);
+        if (label.getProject() == this) {
+            label.setProject(null);
         }
     }
 

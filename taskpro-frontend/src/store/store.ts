@@ -3,6 +3,7 @@ import { configureStore } from '@reduxjs/toolkit';
 import authSlice from './slices/authSlice';
 import projectSlice from './slices/projectsSlice';
 import taskSlice from './slices/tasksSlice';
+import teamSlice from './slices/teamsSlice';
 import notificationSlice from './slices/notificationsSlice';
 import uiSlice from './slices/uiSlice';
 
@@ -11,6 +12,7 @@ export const store = configureStore({
     auth: authSlice,
     projects: projectSlice,
     tasks: taskSlice,
+    teams: teamSlice,
     notifications: notificationSlice,
     ui: uiSlice,
   },

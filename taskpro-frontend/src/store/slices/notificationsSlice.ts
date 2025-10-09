@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk, type PayloadAction } from '@reduxjs/toolkit';
-import type {Notification} from '../../types';
+import type { Notification } from '../../types/notification.types';
 import api from '../../services/api.ts';
 
 interface NotificationsState {
@@ -22,6 +22,7 @@ export const fetchNotifications = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await api.get('/notifications');
+      // response.data est déjà désenrobé => PageResponse
       return response.data.content;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch notifications');
@@ -33,8 +34,9 @@ export const fetchUnreadCount = createAsyncThunk(
   'notifications/fetchUnreadCount',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await api.get('/notifications/unread/count');
-      return response.data;
+      const response = await api.get('/notifications/count-unread');
+      // response.data est un number après désenrobage
+      return response.data as number;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch unread count');
     }
@@ -57,7 +59,7 @@ export const markAllAsRead = createAsyncThunk(
   'notifications/markAllAsRead',
   async (_, { rejectWithValue }) => {
     try {
-      await api.put('/notifications/read/all');
+      await api.put('/notifications/read-all');
       return true;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Failed to mark all notifications as read');
@@ -69,7 +71,7 @@ export const clearAllNotifications = createAsyncThunk(
   'notifications/clearAll',
   async (_, { rejectWithValue }) => {
     try {
-      await api.delete('/notifications/all');
+      await api.delete('/notifications/clear-all');
       return true;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Failed to clear notifications');

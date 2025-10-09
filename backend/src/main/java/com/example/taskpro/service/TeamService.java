@@ -6,6 +6,7 @@ import com.example.taskpro.dto.team.TeamCreateDTO;
 import com.example.taskpro.dto.team.TeamDetailDTO;
 import com.example.taskpro.dto.user.UserBasicDTO;
 import com.example.taskpro.exception.OperationNotPermittedException;
+import com.example.taskpro.exception.ResourceNotFoundException;
 import com.example.taskpro.mapper.TeamMapper;
 import com.example.taskpro.model.Project;
 import com.example.taskpro.model.Team;
@@ -15,7 +16,6 @@ import com.example.taskpro.repository.TeamRepository;
 import com.example.taskpro.repository.UserRepository;
 import com.example.taskpro.util.PageResponse;
 import com.example.taskpro.util.PaginationUtil;
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
@@ -26,6 +26,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
 import java.util.stream.Collectors;
+
+import static com.example.taskpro.util.SecurityUtil.checkIfCurrentUserIsLeader;
 
 @Service
 @RequiredArgsConstructor
@@ -109,7 +111,7 @@ public class TeamService {
 
     public TeamDetailDTO updateTeam(Long id, TeamCreateDTO request, Authentication authentication) {
         Team team = findTeamOrThrow(id);
-        checkIfCurrentUserIsLeader(team, authentication);
+        checkIfCurrentUserIsLeader(team, userRepository, authentication);
 
         team.setName(request.getName());
         team.setDescription(request.getDescription());
@@ -119,7 +121,7 @@ public class TeamService {
 
     public TeamDetailDTO updateTeamLeader(Long id, Long newLeaderId, Authentication authentication) {
         Team team = findTeamOrThrow(id);
-        checkIfCurrentUserIsLeader(team, authentication);
+        checkIfCurrentUserIsLeader(team, userRepository, authentication);
 
         User newLeader = findUserOrThrow(newLeaderId);
         team.setLeader(newLeader);
@@ -134,7 +136,7 @@ public class TeamService {
 
     public TeamDetailDTO addMemberToTeam(Long teamId, Long userId, Authentication authentication) {
         Team team = findTeamOrThrow(teamId);
-        checkIfCurrentUserIsLeader(team, authentication);
+        checkIfCurrentUserIsLeader(team, userRepository, authentication);
 
         User user = findUserOrThrow(userId);
 
@@ -152,7 +154,7 @@ public class TeamService {
 
     public TeamDetailDTO removeMemberFromTeam(Long teamId, Long userId, Authentication authentication) {
         Team team = findTeamOrThrow(teamId);
-        checkIfCurrentUserIsLeader(team, authentication);
+        checkIfCurrentUserIsLeader(team, userRepository, authentication);
 
         User user = findUserOrThrow(userId);
 
@@ -182,10 +184,10 @@ public class TeamService {
 
     public TeamDetailDTO assignProjectToTeam(Long teamId, Long projectId, Authentication authentication) {
         Team team = findTeamOrThrow(teamId);
-        checkIfCurrentUserIsLeader(team, authentication);
+        checkIfCurrentUserIsLeader(team, userRepository, authentication);
 
         var project = projectRepository.findById(projectId)
-                .orElseThrow(() -> new EntityNotFoundException("Project not found with id: " + projectId));
+                .orElseThrow(() -> new ResourceNotFoundException("Project not found with id: " + projectId));
 
         if (project.getTeam() != null && !project.getTeam().equals(team)) {
             throw new OperationNotPermittedException("Project is already assigned to another team");
@@ -210,7 +212,7 @@ public class TeamService {
 
     public void deleteTeam(Long id, Authentication authentication) {
         Team team = findTeamOrThrow(id);
-        checkIfCurrentUserIsLeader(team, authentication);
+        checkIfCurrentUserIsLeader(team, userRepository, authentication);
 
         for (User member : new HashSet<>(team.getMembers())) {
             team.removeMember(member);
@@ -230,23 +232,13 @@ public class TeamService {
     // === Private utils ===
     private Team findTeamOrThrow(Long id) {
         return teamRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Team not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Team not found with id: " + id));
     }
 
     private User findUserOrThrow(Long id) {
         return userRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
     }
 
-    private User getCurrentUser(Authentication authentication) {
-        return userRepository.findByEmail(authentication.getName())
-                .orElseThrow(() -> new EntityNotFoundException("User not found with email: " + authentication.getName()));
-    }
 
-    private void checkIfCurrentUserIsLeader(Team team, Authentication authentication) {
-        User currentUser = getCurrentUser(authentication);
-        if (!team.getLeader().getId().equals(currentUser.getId())) {
-            throw new SecurityException("Only the team leader can perform this action.");
-        }
-    }
 }

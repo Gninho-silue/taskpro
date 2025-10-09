@@ -102,7 +102,7 @@ public class EmailVerificationService {
 
     public void sendValidationEmail(User user) throws MessagingException {
         EmailVerificationToken token = createToken(user);
-        String url = "http://localhost:8081/api/v1/auth/confirm?token=" + token.getToken();
+        String url = "http://localhost:8081/api/v1/auth/activate-account?token=" + token.getToken();
         sendEmail(
                 user.getEmail(),
                 user.fullName(),

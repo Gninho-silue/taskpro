@@ -25,6 +25,7 @@ public class CommentMapper {
                 .id(comment.getId())
                 .content(comment.getContent())
                 .createdAt(comment.getCreatedAt())
+                .updatedAt(comment.getUpdatedAt())
                 .user(userMapper.toBasicDto(comment.getUser()))
                 .build();
     }

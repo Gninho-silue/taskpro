@@ -21,13 +21,26 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Intercepteur pour gérer les erreurs de réponse
+// Intercepteur pour déballer SuccessResponse { data, message, code, timestamp }
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    const maybeEnvelope = response?.data;
+    if (
+      maybeEnvelope &&
+      typeof maybeEnvelope === 'object' &&
+      'data' in maybeEnvelope &&
+      'timestamp' in maybeEnvelope &&
+      'code' in maybeEnvelope
+    ) {
+      // Réécrit response.data pour retourner directement le contenu utile
+      // Exemple: PageResponse, entité, valeur primitive...
+      // eslint-disable-next-line no-param-reassign
+      response.data = maybeEnvelope.data;
+    }
+    return response;
+  },
   (error) => {
-    // Gérer les erreurs 401 (non autorisé) - token expiré ou invalide
     if (error.response && error.response.status === 401) {
-      // Rediriger vers la page de connexion ou rafraîchir le token
       localStorage.removeItem('token');
       window.location.href = '/login';
     }

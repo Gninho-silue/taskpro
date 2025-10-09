@@ -5,7 +5,6 @@ import com.example.taskpro.dto.project.ProjectCreateDTO;
 import com.example.taskpro.model.Project;
 import com.example.taskpro.model.ProjectStatus;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -31,7 +30,7 @@ public class ProjectMapper {
                 .description(dto.getDescription())
                 .startDate(dto.getStartDate())
                 .dueDate(dto.getDueDate())
-                .status(ProjectStatus.ACTIVE)
+                .status(ProjectStatus.PLANNING)
                 .build();
     }
 

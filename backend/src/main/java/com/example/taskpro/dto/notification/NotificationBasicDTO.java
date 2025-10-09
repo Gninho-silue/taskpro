@@ -2,7 +2,6 @@ package com.example.taskpro.dto.notification;
 
 import com.example.taskpro.model.NotificationType;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;

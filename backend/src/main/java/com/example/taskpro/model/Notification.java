@@ -25,6 +25,7 @@ public class Notification extends BaseEntity {
     private LocalDateTime sentAt;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private NotificationType type = NotificationType.GENERAL;
 
     private boolean read = false;

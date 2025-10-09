@@ -11,6 +11,8 @@ import com.example.taskpro.repository.UserRepository;
 import com.example.taskpro.service.AuthenticationService;
 import com.example.taskpro.service.EmailVerificationService;
 import com.example.taskpro.service.PasswordResetService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +32,7 @@ import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 @RestController
 @RequestMapping("auth")
 @RequiredArgsConstructor
+@Tag(name = "Authentication", description = "API pour l'authentification et la gestion des comptes utilisateurs")
 public class AuthController {
 
     private final AuthenticationService authService;
@@ -39,6 +42,7 @@ public class AuthController {
     private final PasswordEncoder passwordEncoder;
 
     @PostMapping("/register")
+    @Operation(summary = "Inscription d'un nouvel utilisateur", description = "Crée un nouveau compte utilisateur et envoie un email de vérification")
     public ResponseEntity<SuccessResponse> register(
             @RequestBody @Valid RegisterRequest request
     ) throws MessagingException {
@@ -55,6 +59,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
+    @Operation(summary = "Connexion utilisateur", description = "Authentifie un utilisateur et retourne un token JWT")
     public ResponseEntity<SuccessResponse> login(@RequestBody @Valid LoginRequest request) {
         String token = authService.authenticate(request).getToken();
         return ResponseEntity.ok(SuccessResponse.builder()
@@ -65,7 +70,8 @@ public class AuthController {
                 .build());
     }
 
-    @GetMapping("/confirm")
+    @GetMapping("/activate-account")
+    @Operation(summary = "Confirmation d'email", description = "Vérifie le token de confirmation d'email et active le compte utilisateur")
     public ResponseEntity<SuccessResponse> confirmEmail(@RequestParam("token") String token) {
         emailService.verifyToken(token);
         return ResponseEntity.ok(
@@ -79,6 +85,7 @@ public class AuthController {
 
 
     @PostMapping("/request-password-reset")
+    @Operation(summary = "Demande de réinitialisation de mot de passe", description = "Envoie un email avec un lien de réinitialisation de mot de passe")
     public ResponseEntity<SuccessResponse> requestReset(@RequestParam String email) throws MessagingException {
         var user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new EmailNotFoundException("User not found with this email: " + email));
@@ -97,6 +104,7 @@ public class AuthController {
     }
 
     @PostMapping("/reset-password")
+    @Operation(summary = "Réinitialisation de mot de passe", description = "Réinitialise le mot de passe d'un utilisateur avec un token valide")
     public ResponseEntity<?> resetPassword(@RequestParam String token, @RequestParam String newPassword) {
         if (!resetService.validateToken(token)) {
             return ResponseEntity.status(UNAUTHORIZED).body(

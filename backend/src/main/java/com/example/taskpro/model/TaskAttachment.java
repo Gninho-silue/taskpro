@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "task_attachments")
 @Getter
@@ -27,6 +29,7 @@ public class TaskAttachment extends BaseEntity {
     private String filePath;
 
     private Long fileSize;
+    private LocalDateTime uploadedAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "task_id", nullable = false)
@@ -37,4 +40,5 @@ public class TaskAttachment extends BaseEntity {
     @JoinColumn(name = "user_id", nullable = false)
     @JsonIgnore
     private User uploader;
+
 }

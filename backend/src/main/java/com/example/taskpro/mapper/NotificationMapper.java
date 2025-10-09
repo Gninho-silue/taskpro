@@ -1,27 +1,26 @@
 package com.example.taskpro.mapper;
 
-import com.example.taskpro.dto.label.LabelBasicDTO;
-import com.example.taskpro.dto.label.LabelCreateDTO;
-import com.example.taskpro.dto.label.LabelDetailDTO;
 import com.example.taskpro.dto.notification.NotificationBasicDTO;
 import com.example.taskpro.dto.notification.NotificationCreateDTO;
 import com.example.taskpro.dto.notification.NotificationDetailDTO;
-import com.example.taskpro.dto.taskAttachment.TaskAttachmentBasicDTO;
-import com.example.taskpro.dto.taskAttachment.TaskAttachmentCreateDTO;
-import com.example.taskpro.dto.taskAttachment.TaskAttachmentDetailDTO;
-import com.example.taskpro.model.*;
+import com.example.taskpro.dto.project.ProjectBasicDTO;
+import com.example.taskpro.dto.task.TaskBasicDTO;
+import com.example.taskpro.dto.user.UserBasicDTO;
+import com.example.taskpro.model.Notification;
+import com.example.taskpro.model.Project;
+import com.example.taskpro.model.Task;
+import com.example.taskpro.model.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.stream.Collectors;
 
-// NotificationMapper.java
+
 @Component
 @RequiredArgsConstructor
 public class NotificationMapper {
+
     private final UserMapper userMapper;
     private final TaskMapper taskMapper;
     private final ProjectMapper projectMapper;
@@ -37,17 +36,29 @@ public class NotificationMapper {
                 .build();
     }
 
-    public NotificationDetailDTO toDetailDto(Notification notification) {
+    public NotificationDetailDTO toNotificationDetail(Notification notification) {
         if (notification == null) return null;
 
         NotificationDetailDTO dto = new NotificationDetailDTO();
         BeanUtils.copyProperties(toBasicDto(notification), dto);
 
-        dto.setUser(userMapper.toBasicDto(notification.getUser()));
-        dto.setRelatedTask(notification.getRelatedTask() != null ?
-                taskMapper.toBasicDto(notification.getRelatedTask()) : null);
-        dto.setRelatedProject(notification.getRelatedProject() != null ?
-                projectMapper.toBasicDto(notification.getRelatedProject()) : null);
+        UserBasicDTO user = userMapper.toBasicDto(notification.getUser());
+        dto.setUser(
+                user
+        );
+
+
+        // Ajouter les détails de l'entité liée
+        if (notification.getRelatedTask() != null) {
+            TaskBasicDTO task = taskMapper.toBasicDto(notification.getRelatedTask());
+            dto.setRelatedTask(task);
+        }
+
+        if (notification.getRelatedProject() != null) {
+            ProjectBasicDTO project = projectMapper.toBasicDto(notification.getRelatedProject());
+            dto.setRelatedProject(project);
+
+        }
 
         return dto;
     }

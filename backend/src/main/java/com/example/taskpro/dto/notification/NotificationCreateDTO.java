@@ -18,9 +18,8 @@ public class NotificationCreateDTO {
     private String message;
 
     private NotificationType type = NotificationType.GENERAL;
-
-    @NotNull(message = "User ID is required")
-    private Long userId;
+    @NotNull(message = "RecipientId  ID is required")
+    private Long recipientUserId;
 
     private Long relatedTaskId;
     private Long relatedProjectId;

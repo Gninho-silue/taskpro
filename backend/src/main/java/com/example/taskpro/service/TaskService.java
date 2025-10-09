@@ -7,12 +7,15 @@ import com.example.taskpro.dto.task.TaskCreateDTO;
 import com.example.taskpro.dto.task.TaskDetailDTO;
 import com.example.taskpro.dto.user.UserBasicDTO;
 import com.example.taskpro.exception.OperationNotPermittedException;
+import com.example.taskpro.exception.ResourceNotFoundException;
 import com.example.taskpro.mapper.TaskMapper;
 import com.example.taskpro.model.*;
-import com.example.taskpro.repository.*;
+import com.example.taskpro.repository.LabelRepository;
+import com.example.taskpro.repository.ProjectRepository;
+import com.example.taskpro.repository.TaskRepository;
+import com.example.taskpro.repository.UserRepository;
 import com.example.taskpro.util.PageResponse;
 import com.example.taskpro.util.PaginationUtil;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Page;
@@ -28,6 +31,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static com.example.taskpro.util.SecurityUtil.authorizeProjectAccess;
 import static com.example.taskpro.util.SecurityUtil.getConnectedUser;
 
 @Service
@@ -124,7 +128,7 @@ public class TaskService {
         if (dto.getLabelIds() != null && !dto.getLabelIds().isEmpty()) {
             List<Label> labels = labelRepository.findAllById(dto.getLabelIds());
             if (labels.size() != dto.getLabelIds().size()) {
-                throw new EntityNotFoundException("One or more labels not found");
+                throw new ResourceNotFoundException("One or more labels not found");
             }
 
             for (Label label : labels) {
@@ -195,7 +199,9 @@ public class TaskService {
     }
 
     public PageResponse<TaskBasicDTO> getTasksByProject(Long projectId, int page, int size, Authentication authentication) {
-        Project project = findProjectOrThrow(projectId);
+        User currentUser = getConnectedUser(authentication, userRepository);
+        Project project =findProjectOrThrow(projectId);
+        authorizeProjectAccess(project, currentUser);
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
         Page<Task> taskPage = taskRepository.findTasksByProjectId(projectId, pageable);
         Page<TaskBasicDTO> dtoPage = taskPage.map(taskMapper::toBasicDto);
@@ -224,7 +230,7 @@ public class TaskService {
         if (dto.getLabelIds() != null) {
             List<Label> labels = labelRepository.findAllById(dto.getLabelIds());
             if (labels.size() != dto.getLabelIds().size()) {
-                throw new EntityNotFoundException("One or more labels not found");
+                throw new ResourceNotFoundException("One or more labels not found");
             }
             task.setLabels(new HashSet<>(labels));
         }
@@ -286,17 +292,17 @@ public class TaskService {
 
     private Task findTaskOrThrow(Long id) {
         return taskRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Task not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Task not found with id: " + id));
     }
 
     private User findUserOrThrow(Long id) {
         return userRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
     }
 
     private Project findProjectOrThrow(Long id) {
         return projectRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Project not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Project not found with id: " + id));
     }
 
 }

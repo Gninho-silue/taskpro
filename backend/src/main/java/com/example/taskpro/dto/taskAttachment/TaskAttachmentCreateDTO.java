@@ -15,13 +15,11 @@ public class TaskAttachmentCreateDTO {
     @NotBlank(message = "File name is required")
     private String fileName;
 
-    @NotBlank(message = "File type is required")
     private String fileType;
 
     @NotBlank(message = "File path is required")
     private String filePath;
 
-    @NotNull(message = "File size is required")
     private Long fileSize;
 
     @NotNull(message = "Task ID is required")

@@ -1,11 +1,14 @@
 package com.example.taskpro.service;
 
+import com.example.taskpro.dto.label.LabelBasicDTO;
 import com.example.taskpro.dto.project.ProjectBasicDTO;
 import com.example.taskpro.dto.project.ProjectCreateDTO;
 import com.example.taskpro.dto.project.ProjectDetailDTO;
+import com.example.taskpro.dto.task.TaskBasicDTO;
 import com.example.taskpro.dto.team.TeamBasicDTO;
 import com.example.taskpro.dto.user.UserBasicDTO;
 import com.example.taskpro.exception.OperationNotPermittedException;
+import com.example.taskpro.exception.ResourceNotFoundException;
 import com.example.taskpro.mapper.ProjectMapper;
 import com.example.taskpro.model.*;
 import com.example.taskpro.repository.ProjectRepository;
@@ -13,7 +16,6 @@ import com.example.taskpro.repository.TeamRepository;
 import com.example.taskpro.repository.UserRepository;
 import com.example.taskpro.util.PageResponse;
 import com.example.taskpro.util.PaginationUtil;
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
@@ -26,8 +28,10 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.example.taskpro.util.SecurityUtil.authorizeProjectAccess;
 import static com.example.taskpro.util.SecurityUtil.getConnectedUser;
 
 @Service
@@ -63,14 +67,42 @@ public class ProjectService {
             ));
         }
 
-        dto.setMembers(project.getMembers().stream()
-                .map(user -> new UserBasicDTO(
-                        user.getId(),
-                        user.getFirstname(),
-                        user.getLastname(),
-                        user.getEmail()
-                ))
-                .collect(Collectors.toSet()));
+        if (project.getLabels() != null) {
+            dto.setLabels(project.getLabels().stream()
+                    .map(label -> new LabelBasicDTO(
+                            label.getId(),
+                            label.getName(),
+                            label.getColor()
+                    ))
+                    .collect(Collectors.toSet()));
+        }
+
+        if (project.getTasks() != null) {
+            dto.setTasks(project.getTasks().stream()
+                    .map(task -> new TaskBasicDTO(
+                            task.getId(),
+                            task.getTitle(),
+                            task.getDescription(),
+                            task.getStatus(),
+                            task.getPriority(),
+                            task.getDueDate(),
+                            task.getEstimatedHours(),
+                            task.getActualHours()
+
+                    )).collect(Collectors.toSet())
+            );
+
+        }
+        if (project.getMembers() != null) {
+            dto.setMembers(project.getMembers().stream()
+                    .map(user -> new UserBasicDTO(
+                            user.getId(),
+                            user.getFirstname(),
+                            user.getLastname(),
+                            user.getEmail()
+                    ))
+                    .collect(Collectors.toSet()));
+        }
 
         return dto;
     }
@@ -93,7 +125,7 @@ public class ProjectService {
                 .description(dto.getDescription())
                 .startDate(dto.getStartDate())
                 .dueDate(dto.getDueDate())
-                .status(ProjectStatus.ACTIVE)
+                .status(ProjectStatus.PLANNING)
                 .archived(false)
                 .members(new HashSet<>())
                 .build();
@@ -241,29 +273,52 @@ public class ProjectService {
         return toDetailDto(projectRepository.save(project));
     }
 
+    /**
+     * Récupère tous les labels associés à un projet
+     */
+    public List<LabelBasicDTO> getProjectLabels(Long projectId, Authentication authentication) {
+        User connectedUser = getConnectedUser(authentication, userRepository);
+
+        Project project =findProjectOrThrow(projectId);
+
+        if ((!project.getMembers().contains(connectedUser)) && (!project.getOwner().equals(connectedUser))) {
+            throw new OperationNotPermittedException("You don't have permission to view this project's labels");
+        }
+
+        return project.getLabels().stream()
+                .map(label -> new LabelBasicDTO(
+                        label.getId(),
+                        label.getName(),
+                        label.getColor()
+                ))
+                .collect(Collectors.toList());
+    }
+
 
     // --- Helpers ---
     private boolean isValidProjectStatusTransition(ProjectStatus from, ProjectStatus to) {
         return switch (from) {
-            case ACTIVE -> to == ProjectStatus.ON_HOLD || to == ProjectStatus.COMPLETED || to == ProjectStatus.CANCELLED;
-            case ON_HOLD -> to == ProjectStatus.ACTIVE || to == ProjectStatus.CANCELLED;
-            case COMPLETED, CANCELLED -> false;
+            case PLANNING -> to == ProjectStatus.IN_PROGRESS || to == ProjectStatus.ON_HOLD || to == ProjectStatus.CANCELLED;
+            case IN_PROGRESS -> to == ProjectStatus.ON_HOLD || to == ProjectStatus.COMPLETED || to == ProjectStatus.CANCELLED;
+            case ON_HOLD -> to == ProjectStatus.PLANNING || to == ProjectStatus.IN_PROGRESS || to == ProjectStatus.CANCELLED;
+            case COMPLETED, CANCELLED -> false; // États finaux, pas de transition possible
         };
+
     }
 
     private Team findTeamOrThrow(Long id) {
         return teamRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Team not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Team not found with id: " + id));
     }
 
     private User findUserOrThrow(Long id) {
         return userRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
     }
 
     private Project findProjectOrThrow(Long id) {
         return projectRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Project not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Project not found with id: " + id));
     }
 
     private void authorizeProjectOwner(Project project, User user) {
@@ -272,16 +327,6 @@ public class ProjectService {
         }
     }
 
-    private void authorizeProjectAccess(Project project, User user) {
-        boolean isMember = project.getMembers().contains(user);
-        boolean isOwner = project.getOwner().equals(user);
-        boolean isTeamMember = project.getTeam() != null &&
-                (project.getTeam().getMembers().contains(user) || project.getTeam().getLeader().equals(user));
-
-        if (!isMember && !isOwner && !isTeamMember) {
-            throw new OperationNotPermittedException("You don't have access to this project");
-        }
-    }
 }
 
 

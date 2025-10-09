@@ -8,7 +8,6 @@ import com.example.taskpro.model.Label;
 import com.example.taskpro.model.Project;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 import java.util.HashSet;
@@ -17,7 +16,7 @@ import java.util.stream.Collectors;
 @Component
 @RequiredArgsConstructor
 public class LabelMapper {
-    @Lazy
+
     private final TaskMapper taskMapper;
 
     public LabelBasicDTO toBasicDto(Label label) {

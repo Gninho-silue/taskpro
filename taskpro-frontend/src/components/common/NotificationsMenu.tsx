@@ -1,16 +1,16 @@
 import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
-import { AppDispatch, RootState } from '../../store/store.ts';
+import { AppDispatch, RootState } from '@store/store.ts';
 import { 
   fetchNotifications, 
   markAsRead, 
   markAllAsRead, 
   clearAllNotifications 
-} from '../../store/slices/notificationsSlice.ts';
+} from '@store/slices/notificationsSlice.ts';
 import { 
   Menu, 
-  MenuItem, 
+  
   Typography, 
   Box, 
   Divider, 
@@ -25,12 +25,12 @@ import {
 import { 
   Notifications as NotificationsIcon, 
   CheckCircle, 
-  Error, 
+  
   Info, 
   Assignment 
 } from '@mui/icons-material';
 import { formatDistanceToNow } from 'date-fns';
-import { Notification, NotificationType } from '../../types';
+import {Notification, NotificationType} from "@types/notification.types.ts";
 
 interface NotificationsMenuProps {
   anchorEl: HTMLElement | null;
@@ -73,12 +73,12 @@ const NotificationsMenu: React.FC<NotificationsMenuProps> = ({
         return <Assignment color="primary" />;
       case NotificationType.TASK_COMPLETED:
         return <CheckCircle color="success" />;
-      case NotificationType.TASK_COMMENT:
+      case NotificationType.TASK_COMMENTED:
         return <Info color="info" />;
       case NotificationType.PROJECT_INVITATION:
       case NotificationType.TEAM_INVITATION:
         return <NotificationsIcon color="secondary" />;
-      case NotificationType.SYSTEM:
+      case NotificationType.GENERAL:
       default:
         return <Info color="action" />;
     }
@@ -128,7 +128,7 @@ const NotificationsMenu: React.FC<NotificationsMenuProps> = ({
       ) : (
         <List sx={{ width: '100%', maxHeight: 400, overflow: 'auto' }}>
           {notifications.map((notification: Notification) => (
-            <React.Fragment key={notification.id}>
+            <div key={notification.id}>
               <ListItem
                 alignItems="flex-start"
                 button
@@ -143,7 +143,7 @@ const NotificationsMenu: React.FC<NotificationsMenuProps> = ({
                 <ListItemText
                   primary={notification.message}
                   secondary={
-                    <React.Fragment>
+                    <>
                       <Typography
                         component="span"
                         variant="body2"
@@ -156,12 +156,12 @@ const NotificationsMenu: React.FC<NotificationsMenuProps> = ({
                           {' — '}{notification.relatedProject.name}
                         </Typography>
                       )}
-                    </React.Fragment>
+                    </>
                   }
                 />
               </ListItem>
               <Divider variant="inset" component="li" />
-            </React.Fragment>
+            </div>
           ))}
         </List>
       )}

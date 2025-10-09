@@ -99,14 +99,20 @@ public class Task extends BaseEntity {
         }
     }
 
+    /**
+     * Ajoute un label à cette tâche
+     */
     public void addLabel(Label label) {
         this.labels.add(label);
-        // Si Label a une relation inverse, ajoutez le code correspondant
+        label.getTasks().add(this);
     }
 
+    /**
+     * Supprime un label de cette tâche
+     */
     public void removeLabel(Label label) {
         this.labels.remove(label);
-        // Si Label a une relation inverse, ajoutez le code correspondant
+        label.getTasks().remove(this);
     }
 
     public void setParentTask(Task parent) {

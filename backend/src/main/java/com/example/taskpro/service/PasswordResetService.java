@@ -4,7 +4,6 @@ import com.example.taskpro.exception.TokenValidationException;
 import com.example.taskpro.model.PasswordResetToken;
 import com.example.taskpro.model.User;
 import com.example.taskpro.repository.PasswordResetTokenRepository;
-import com.example.taskpro.repository.UserRepository;
 import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

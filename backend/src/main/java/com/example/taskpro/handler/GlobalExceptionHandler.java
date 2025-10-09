@@ -21,6 +21,7 @@ import static org.springframework.http.HttpStatus.*;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
 
@@ -161,15 +162,18 @@ public class GlobalExceptionHandler {
                 );
     }
 
-//    @ExceptionHandler(EntityNotFoundException.class)
-//    public ResponseEntity<ExceptionResponse> handleException(EmailNotFoundException exp) {
-//        log.warn("Entity not found: {}", exp.getMessage());
-//        return ResponseEntity.status(NOT_FOUND)
-//                .body(
-//                        ExceptionResponse.builder()
-//                                .businessErrorCode()
-//                )
-//    }
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<ExceptionResponse> handleException(ResourceNotFoundException exp) {
+        log.warn("Ressource not found: {}", exp.getMessage());
+        return ResponseEntity.status(NOT_FOUND).body(
+                ExceptionResponse.builder()
+                        .businessErrorCode(NO_FOUND.getCode())
+                        .businessErrorMessage(NO_FOUND.getMessage())
+                        .error(exp.getMessage())
+                        .timestamp(LocalDateTime.now())
+                        .build()
+        );
+    }
 
     @ExceptionHandler(TokenValidationException.class)
     public ResponseEntity<ExceptionResponse> handleException(TokenValidationException exp) {

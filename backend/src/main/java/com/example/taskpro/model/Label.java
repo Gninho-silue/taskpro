@@ -37,4 +37,51 @@ public class Label extends BaseEntity {
     @ManyToMany(mappedBy = "labels")
     @JsonIgnore
     private Set<Task> tasks = new HashSet<>();
+
+
+
+    /**
+     * Définit le projet associé à ce label et met à jour la relation bidirectionnelle
+     */
+    public void setProject(Project project) {
+        // Enlever de l'ancien projet si présent
+        if (this.project != null && !this.project.equals(project)) {
+            this.project.getLabels().remove(this);
+        }
+
+        this.project = project;
+
+        // Ajouter au nouveau projet si présent
+        if (project != null) {
+            project.getLabels().add(this);
+        }
+    }
+
+    /**
+     * Supprime l'association avec le projet actuel
+     */
+    public void removeFromProject() {
+        if (this.project != null) {
+            Project currentProject = this.project;
+            this.project = null;
+            currentProject.getLabels().remove(this);
+        }
+    }
+
+    /**
+     * Ajoute une tâche à ce label
+     */
+    public void addTask(Task task) {
+        this.tasks.add(task);
+        task.getLabels().add(this);
+    }
+
+    /**
+     * Supprime une tâche de ce label
+     */
+    public void removeTask(Task task) {
+        this.tasks.remove(task);
+        task.getLabels().remove(this);
+    }
+
 }
