@@ -96,7 +96,7 @@ public class UserService {
         if (connectedUser.getRole() != Role.ADMIN) {
             throw new OperationNotPermittedException("Only admins can disable users.");
         }
-        user.setEnabled(disabled);
+        user.setEnabled(user.isEnabled() && !disabled);
         user.setUpdatedAt(LocalDateTime.now());
         userRepository.save(user);
     }

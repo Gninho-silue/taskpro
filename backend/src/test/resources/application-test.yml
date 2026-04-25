@@ -1,0 +1,51 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb
+    username: sa
+    password: 
+    driver-class-name: org.h2.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+    database: h2
+    database-platform: org.hibernate.dialect.H2Dialect
+
+  mail:
+    host: localhost
+    port: 1025
+    username: test
+    password: test
+
+server:
+  port: 0 # Random port for tests
+
+logging:
+  level:
+    org.springframework.security: WARN
+    com.example.taskpro: WARN
+    org.springframework.web: WARN
+    org.hibernate.SQL: WARN
+    org.hibernate.type.descriptor.sql.BasicBinder: WARN
+
+application:
+  security:
+    jwt:
+      secret-key: test-secret-key-for-testing-only
+      expiration: 86400000
+  file:
+    upload:
+      files-output-path: ./test-uploads
+  bcrypt:
+    strength: 4 # Lower strength for faster tests
+
+# Disable actuator for tests
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health

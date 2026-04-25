@@ -25,8 +25,38 @@ services:
       - spring-demo
     restart: unless-stopped
 
+  backend:
+    container_name: taskpro-backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8081:8081"
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      DB_URL: jdbc:postgresql://postgres-sql-taskpro:5432/taskprodb
+      DB_USERNAME: taskpro
+      DB_PASSWORD: taskpro
+      MAIL_HOST: mail-dev-taskpro
+      MAIL_PORT: 1025
+      MAIL_USERNAME: taskpro
+      MAIL_PASSWORD: taskpro
+      JWT_SECRET_KEY: wPGNMJ/Vag6i23vF7Dc4la3y8IHirOpmoOQ5jZnbepI=
+      JWT_EXPIRATION: 86400000
+      FILE_UPLOAD_PATH: /app/uploads
+    volumes:
+      - uploads:/app/uploads
+    depends_on:
+      - postgres
+      - mail-dev
+    networks:
+      - spring-demo
+    restart: unless-stopped
+
 volumes:
   postgres:
+    driver: local
+  uploads:
     driver: local
 
 networks:

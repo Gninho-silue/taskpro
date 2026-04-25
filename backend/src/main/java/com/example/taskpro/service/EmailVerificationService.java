@@ -66,7 +66,7 @@ public class EmailVerificationService {
             String activationCode,
             String subject
     ) throws MessagingException {
-        String templateName = emailTemplate != null ? emailTemplate.name() : "activate_account";
+        String templateName = emailTemplate != null ? emailTemplate.getName() : "activate_account";
 
         MimeMessage mimeMessage = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(

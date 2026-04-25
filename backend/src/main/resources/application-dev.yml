@@ -1,8 +1,8 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/taskprodb
-    username: taskpro
-    password: taskpro
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/taskprodb}
+    username: ${DB_USERNAME:taskpro}
+    password: ${DB_PASSWORD:taskpro}
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -12,15 +12,18 @@ spring:
     properties:
       hibernate:
         format_sql: true
+        jdbc:
+          batch_size: 20
+        order_inserts: true
+        order_updates: true
     database: postgresql
     database-platform: org.hibernate.dialect.PostgreSQLDialect
 
-
   mail:
-    host: localhost
-    port: 1025
-    username: silue
-    password: silue
+    host: ${MAIL_HOST:localhost}
+    port: ${MAIL_PORT:1025}
+    username: ${MAIL_USERNAME:silue}
+    password: ${MAIL_PASSWORD:silue}
     properties:
       mail:
         smtp:
@@ -38,13 +41,28 @@ server:
 logging:
   level:
     org.springframework.security: DEBUG
+    com.example.taskpro: DEBUG
+    org.springframework.web: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+
+# Actuator configuration for monitoring
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when-authorized
 
 application:
   security:
     jwt:
-      secret-key: wPGNMJ/Vag6i23vF7Dc4la3y8IHirOpmoOQ5jZnbepI=
-      expiration: 86400000
+      secret-key: ${JWT_SECRET_KEY:default-secret-key-change-in-production}
+      expiration: ${JWT_EXPIRATION:86400000}
   file:
     upload:
-      files-output-path: ./uploads
-
+      files-output-path: ${FILE_UPLOAD_PATH:./uploads}
+  bcrypt:
+    strength: ${BCRYPT_STRENGTH:12}

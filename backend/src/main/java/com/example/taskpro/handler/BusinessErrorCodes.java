@@ -4,6 +4,7 @@ import lombok.Getter;
 import org.springframework.http.HttpStatus;
 
 import static org.springframework.http.HttpStatus.*;
+
 @Getter
 public enum BusinessErrorCodes {
 
@@ -28,7 +29,7 @@ public enum BusinessErrorCodes {
 
     private final HttpStatus httpStatus;
 
-    BusinessErrorCodes(int code,HttpStatus httpStatus, String message) {
+    BusinessErrorCodes(int code, HttpStatus httpStatus, String message) {
         this.code = code;
         this.message = message;
         this.httpStatus = httpStatus;

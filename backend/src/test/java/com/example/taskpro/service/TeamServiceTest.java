@@ -43,15 +43,10 @@ public class TeamServiceTest {
     @InjectMocks
     private TeamService teamService;
 
-    private User leader;
-    private User member;
-    private Team team;
-    private TeamBasicDTO teamDTO;
-
     @BeforeEach
     void setUp() {
         // Setup leader
-        leader = User.builder()
+        User leader = User.builder()
                 .id(1L)
                 .firstname("John")
                 .lastname("Doe")
@@ -60,7 +55,7 @@ public class TeamServiceTest {
                 .build();
 
         // Setup member
-        member = User.builder()
+        User member = User.builder()
                 .id(2L)
                 .firstname("Jane")
                 .lastname("Smith")
@@ -69,7 +64,7 @@ public class TeamServiceTest {
                 .build();
 
         // Setup team
-        team = Team.builder()
+        Team team = Team.builder()
                 .id(1L)
                 .name("Test Team")
                 .description("Test Description")
@@ -79,7 +74,7 @@ public class TeamServiceTest {
                 .build();
 
         // Setup teamDTO
-        teamDTO = TeamBasicDTO.builder()
+        TeamBasicDTO teamDTO = TeamBasicDTO.builder()
                 .id(1L)
                 .name("Test Team")
                 .description("Test Description")

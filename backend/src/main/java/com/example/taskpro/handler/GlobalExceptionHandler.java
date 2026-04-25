@@ -2,8 +2,8 @@ package com.example.taskpro.handler;
 
 import com.example.taskpro.exception.*;
 import jakarta.mail.MessagingException;
-import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
@@ -23,7 +23,6 @@ import static org.springframework.http.HttpStatus.*;
 public class GlobalExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
-
 
 
     @ExceptionHandler(LockedException.class)
@@ -70,6 +69,7 @@ public class GlobalExceptionHandler {
                                 .build()
                 );
     }
+
     @ExceptionHandler(EmailAlreadyExistsException.class)
     public ResponseEntity<ExceptionResponse> handleException(EmailAlreadyExistsException exp) {
         log.warn("Email already exists: {}", exp.getMessage());
@@ -143,6 +143,20 @@ public class GlobalExceptionHandler {
                 .body(
                         ExceptionResponse.builder()
                                 .validationErrors(errors)
+                                .timestamp(LocalDateTime.now())
+                                .build()
+                );
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ExceptionResponse> handleException(IllegalArgumentException exp) {
+        log.warn("Illegal argument: {}", exp.getMessage());
+        return ResponseEntity
+                .status(BAD_REQUEST)
+                .body(
+                        ExceptionResponse.builder()
+                                .businessErrorMessage(exp.getMessage())
+                                .error(exp.getMessage())
                                 .timestamp(LocalDateTime.now())
                                 .build()
                 );
