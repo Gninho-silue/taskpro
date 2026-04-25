@@ -36,14 +36,25 @@ export function RegisterPage() {
 
   const onSubmit = async (data: FormData) => {
     setLoading(true);
+    const { dateOfBirth, ...rest } = data;
+    const payload = dateOfBirth ? { ...rest, dateOfBirth } : rest;
     try {
-      await api.post<ApiResponse<{ email: string; message: string }>>('/auth/register', data);
+      await api.post<ApiResponse<{ email: string; message: string }>>('/auth/register', payload);
       toast.success('Account created! Check your email to verify.');
       navigate('/login');
     } catch (err: any) {
-      const code = err.response?.data?.code;
-      if (code === 305) toast.error('Email already in use');
-      else toast.error('Registration failed');
+      const body = err.response?.data;
+      const code = body?.businessErrorCode;
+      if (code === 305) {
+        toast.error('Email already in use');
+      } else if (body?.validationErrors) {
+        const msgs = Object.values(body.validationErrors as Record<string, string>).join(', ');
+        toast.error(msgs || 'Validation failed');
+      } else if (body?.businessErrorMessage) {
+        toast.error(body.businessErrorMessage);
+      } else {
+        toast.error('Registration failed');
+      }
     } finally {
       setLoading(false);
     }

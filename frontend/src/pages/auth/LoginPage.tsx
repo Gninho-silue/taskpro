@@ -34,12 +34,12 @@ export function LoginPage() {
       login(token, meRes.data.data);
       navigate('/dashboard');
     } catch (err: any) {
-      const code = err.response?.data?.code;
+      const code = err.response?.data?.businessErrorCode;
       if (code === 307) toast.error('Please verify your email first');
       else if (code === 302) toast.error('Account is locked');
       else if (code === 303) toast.error('Account is disabled');
       else if (code === 304) toast.error('Invalid credentials');
-      else toast.error('Login failed');
+      else toast.error(err.response?.data?.businessErrorMessage ?? 'Login failed');
     } finally {
       setLoading(false);
     }
