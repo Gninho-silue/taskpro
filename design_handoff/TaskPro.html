@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>TaskPro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body, #root { height: 100%; }
+  body {
+    font-family: "JetBrains Mono", monospace;
+    background: #080812;
+    color: #e8e8f0;
+    overflow: hidden;
+  }
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #2a2a48; border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: #3b3b5e; }
+  input, textarea {
+    font-family: "JetBrains Mono", monospace;
+  }
+  button { font-family: "JetBrains Mono", monospace; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+
+/* ─── DATA ──────────────────────────────────────────────── */
+const MOCK_USER = { id: 1, firstname: "Alex", lastname: "Dupont", email: "alex.dupont@taskpro.dev" };
+
+const PROJECTS = [
+  { id: 1, name: "E-Commerce Redesign", description: "Full redesign of the storefront and checkout flow", status: "IN_PROGRESS", dueDate: "2026-06-30", taskCount: 24, memberCount: 5, progress: 62 },
+  { id: 2, name: "Mobile App v2",        description: "React Native rewrite with offline support",        status: "PLANNING",    dueDate: "2026-09-01", taskCount: 12, memberCount: 3, progress: 18 },
+  { id: 3, name: "API Gateway",          description: "Migrate to new API gateway with rate limiting",    status: "IN_PROGRESS", dueDate: "2026-05-15", taskCount: 18, memberCount: 4, progress: 74 },
+  { id: 4, name: "Design System",        description: "Build a shared component library",                status: "COMPLETED",   dueDate: "2026-03-31", taskCount: 31, memberCount: 6, progress: 100 },
+  { id: 5, name: "Data Pipeline",        description: "ETL pipeline for analytics platform",             status: "ON_HOLD",     dueDate: "2026-07-01", taskCount: 9,  memberCount: 2, progress: 35 },
+  { id: 6, name: "Security Audit",       description: "Penetration testing and vulnerability fixes",     status: "PLANNING",    dueDate: "2026-05-31", taskCount: 7,  memberCount: 3, progress: 5  },
+];
+
+const TASKS = [
+  { id:1, title:"Design login screen mockups",       status:"DONE",        priority:"HIGH",   dueDate:"2026-04-20", projectId:1, assignee:{id:1,firstname:"Alex",lastname:"Dupont"},   labels:[{id:1,name:"Design",color:"#a78bfa"}],  comments:3, attachments:2, description:"Create hi-fi mockups for the full authentication flow in Figma, including login, register, password reset, and email verification screens.", estimatedHours:8,  actualHours:7  },
+  { id:2, title:"Implement product listing page",    status:"IN_PROGRESS", priority:"HIGH",   dueDate:"2026-04-28", projectId:1, assignee:{id:2,firstname:"Marie",lastname:"Chen"},    labels:[{id:2,name:"Frontend",color:"#10b981"}], comments:1, attachments:0, description:"Build the product grid with filtering by category, price range, and sorting options. Use React Query for server-state and Zustand for filter state.", estimatedHours:16, actualHours:10 },
+  { id:3, title:"Checkout flow API integration",     status:"IN_PROGRESS", priority:"URGENT", dueDate:"2026-04-26", projectId:1, assignee:{id:1,firstname:"Alex",lastname:"Dupont"},   labels:[{id:3,name:"Backend",color:"#f59e0b"}],  comments:5, attachments:1, description:"Connect payment gateway and order management endpoints. Handle error states and loading indicators throughout the checkout steps.", estimatedHours:20, actualHours:12 },
+  { id:4, title:"Write unit tests for cart service", status:"TODO",        priority:"MEDIUM", dueDate:"2026-05-05", projectId:1, assignee:null,                                        labels:[{id:4,name:"Testing",color:"#06b6d4"}],  comments:0, attachments:0, description:"Cover edge cases for cart state management including empty cart, max quantity, discount codes, and session expiry.", estimatedHours:10, actualHours:0  },
+  { id:5, title:"Performance audit — Lighthouse",    status:"TODO",        priority:"LOW",    dueDate:"2026-05-10", projectId:1, assignee:{id:3,firstname:"Lucas",lastname:"Martin"},  labels:[],                                       comments:0, attachments:0, description:"Run a full Lighthouse audit on the main pages and fix top issues to achieve a score of 90+ across all metrics.", estimatedHours:6,  actualHours:0  },
+  { id:6, title:"Set up CI/CD pipeline",             status:"IN_REVIEW",   priority:"HIGH",   dueDate:"2026-04-25", projectId:1, assignee:{id:2,firstname:"Marie",lastname:"Chen"},    labels:[{id:3,name:"Backend",color:"#f59e0b"}],  comments:2, attachments:3, description:"GitHub Actions for build, test, deploy to staging and production. Include branch protection rules and required status checks.", estimatedHours:12, actualHours:14 },
+  { id:7, title:"Accessibility audit (WCAG 2.1)",    status:"TODO",        priority:"MEDIUM", dueDate:"2026-05-15", projectId:1, assignee:null,                                        labels:[{id:2,name:"Frontend",color:"#10b981"}], comments:0, attachments:0, description:"Full WCAG 2.1 AA audit and remediation plan. Focus on keyboard navigation, screen reader compatibility, and color contrast.", estimatedHours:8,  actualHours:0  },
+  { id:8, title:"Mobile responsive fixes",           status:"IN_REVIEW",   priority:"HIGH",   dueDate:"2026-04-27", projectId:1, assignee:{id:1,firstname:"Alex",lastname:"Dupont"},   labels:[{id:2,name:"Frontend",color:"#10b981"}], comments:1, attachments:0, description:"Fix layout issues on viewports below 768px. Focus on nav, product grid, and checkout form.", estimatedHours:6,  actualHours:5  },
+];
+
+const NOTIFICATIONS = [
+  { id:1, message:"Marie Chen commented on 'Checkout flow API integration'", type:"TASK_COMMENTED",      read:false, sentAt:"09:14" },
+  { id:2, message:"You've been assigned to 'Mobile responsive fixes'",       type:"TASK_ASSIGNED",       read:false, sentAt:"08:30" },
+  { id:3, message:"'CI/CD pipeline' status changed to IN_REVIEW",            type:"TASK_STATUS_CHANGED", read:false, sentAt:"Yesterday" },
+  { id:4, message:"'Checkout flow' is due tomorrow",                         type:"TASK_DUE_SOON",       read:true,  sentAt:"Yesterday" },
+  { id:5, message:"Lucas Martin joined E-Commerce Redesign",                 type:"GENERAL",             read:true,  sentAt:"Apr 23" },
+];
+
+/* ─── TOKENS ────────────────────────────────────────────── */
+const C = {
+  bg:       "#080812",
+  surface:  "#0c0c1d",
+  card:     "#0f0f20",
+  border:   "#1e1e3a",
+  border2:  "#2a2a48",
+  text:     "#e8e8f0",
+  muted:    "#6b6b8a",
+  dim:      "#3b3b5e",
+  purple:   "#7c3aed",
+  purpleL:  "#a78bfa",
+  purpleD:  "#4c1d95",
+  green:    "#10b981",
+  amber:    "#f59e0b",
+  red:      "#ef4444",
+  cyan:     "#06b6d4",
+};
+
+const STATUS_COLOR  = { PLANNING:"#6b6b8a", IN_PROGRESS:C.purple, ON_HOLD:C.amber, COMPLETED:C.green, CANCELLED:C.red };
+const PRIORITY_COLOR = { LOW:C.muted, MEDIUM:C.cyan, HIGH:C.amber, URGENT:C.red };
+const PRIORITY_BG   = { LOW:"rgba(107,107,138,.15)", MEDIUM:"rgba(6,182,212,.15)", HIGH:"rgba(245,158,11,.15)", URGENT:"rgba(239,68,68,.15)" };
+
+/* ─── ICONS (inline SVG helpers) ───────────────────────── */
+const Icon = ({ d, size=16, stroke=C.muted }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={stroke} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d={d}/>
+  </svg>
+);
+
+/* ─── SHARED COMPONENTS ─────────────────────────────────── */
+function Badge({ label, color, bg }) {
+  return (
+    <span style={{ fontSize:10, fontWeight:600, padding:"2px 8px", borderRadius:6, background: bg || `${color}22`, color: color, whiteSpace:"nowrap" }}>
+      {label}
+    </span>
+  );
+}
+
+function Avatar({ user, size=28 }) {
+  if (!user) return <div style={{ width:size, height:size, borderRadius:"50%", background:C.border, border:`1px dashed ${C.dim}` }} />;
+  return (
+    <div style={{ width:size, height:size, borderRadius:"50%", background:"linear-gradient(135deg,#7c3aed,#10b981)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:size*0.36, fontWeight:700, color:"#fff", flexShrink:0 }}>
+      {user.firstname[0]}{user.lastname[0]}
+    </div>
+  );
+}
+
+function GridBg({ opacity=0.025 }) {
+  return (
+    <div style={{
+      position:"absolute", inset:0, pointerEvents:"none",
+      backgroundImage:`linear-gradient(rgba(255,255,255,${opacity}) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,${opacity}) 1px, transparent 1px)`,
+      backgroundSize:"40px 40px",
+    }} />
+  );
+}
+
+function Btn({ children, variant="primary", onClick, style: s, size="md" }) {
+  const pad = size==="sm" ? "6px 14px" : "10px 20px";
+  const fs  = size==="sm" ? 12 : 13;
+  const base = {
+    display:"inline-flex", alignItems:"center", gap:7,
+    padding:pad, borderRadius:8, border:"none", cursor:"pointer",
+    fontFamily:"inherit", fontSize:fs, fontWeight:600,
+    transition:"all 0.15s", ...s,
+  };
+  const vars = {
+    primary:  { background:C.purple, color:"#fff" },
+    ghost:    { background:"transparent", color:C.muted, border:`1px solid ${C.border}` },
+    danger:   { background:"rgba(239,68,68,.15)", color:C.red, border:`1px solid rgba(239,68,68,.25)` },
+    success:  { background:"rgba(16,185,129,.15)", color:C.green, border:`1px solid rgba(16,185,129,.25)` },
+  };
+  return <button style={{ ...base, ...vars[variant] }} onClick={onClick}>{children}</button>;
+}
+
+/* ─── AUTH ──────────────────────────────────────────────── */
+function AuthScreen({ onLogin }) {
+  const [mode, setMode] = React.useState("login");
+  const [form, setForm] = React.useState({ email:"alex.dupont@taskpro.dev", password:"Secur3!Pass", firstname:"Alex", lastname:"Dupont" });
+
+  const set = k => e => setForm(f => ({ ...f, [k]: e.target.value }));
+
+  const inputStyle = {
+    width:"100%", padding:"11px 14px",
+    background:"#0c0c1d", border:`1px solid ${C.border}`,
+    borderRadius:8, color:C.text, fontSize:13,
+    outline:"none", transition:"border-color .15s",
+  };
+
+  return (
+    <div style={{ height:"100%", display:"flex", alignItems:"center", justifyContent:"center", position:"relative", background:C.bg }}>
+      <GridBg opacity={0.03} />
+
+      {/* Glow blobs */}
+      <div style={{ position:"absolute", width:400, height:400, borderRadius:"50%", background:"radial-gradient(circle, rgba(124,58,237,.12) 0%, transparent 70%)", top:"10%", left:"20%", pointerEvents:"none" }} />
+      <div style={{ position:"absolute", width:300, height:300, borderRadius:"50%", background:"radial-gradient(circle, rgba(16,185,129,.08) 0%, transparent 70%)", bottom:"15%", right:"25%", pointerEvents:"none" }} />
+
+      <div style={{ width:420, position:"relative", zIndex:1 }}>
+        {/* Logo */}
+        <div style={{ textAlign:"center", marginBottom:32 }}>
+          <div style={{ display:"inline-flex", alignItems:"center", gap:10, marginBottom:16 }}>
+            <div style={{ width:40, height:40, borderRadius:10, background:"linear-gradient(135deg,#7c3aed,#a855f7)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:18, fontWeight:800, color:"#fff" }}>T</div>
+            <span style={{ fontSize:22, fontWeight:800, color:C.text, letterSpacing:"-0.5px" }}>TaskPro</span>
+          </div>
+          <p style={{ fontSize:13, color:C.muted }}>{mode==="login" ? "Sign in to your workspace" : "Create your account"}</p>
+        </div>
+
+        {/* Card */}
+        <div style={{ background:C.card, border:`1px solid ${C.border}`, borderRadius:16, padding:32 }}>
+          {mode==="register" && (
+            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12, marginBottom:14 }}>
+              <div>
+                <label style={{ fontSize:11, color:C.muted, display:"block", marginBottom:6 }}>FIRST NAME</label>
+                <input style={inputStyle} value={form.firstname} onChange={set("firstname")} placeholder="Alex"
+                  onFocus={e=>e.target.style.borderColor=C.purple} onBlur={e=>e.target.style.borderColor=C.border} />
+              </div>
+              <div>
+                <label style={{ fontSize:11, color:C.muted, display:"block", marginBottom:6 }}>LAST NAME</label>
+                <input style={inputStyle} value={form.lastname} onChange={set("lastname")} placeholder="Dupont"
+                  onFocus={e=>e.target.style.borderColor=C.purple} onBlur={e=>e.target.style.borderColor=C.border} />
+              </div>
+            </div>
+          )}
+          <div style={{ marginBottom:14 }}>
+            <label style={{ fontSize:11, color:C.muted, display:"block", marginBottom:6 }}>EMAIL</label>
+            <input style={inputStyle} type="email" value={form.email} onChange={set("email")} placeholder="you@company.com"
+              onFocus={e=>e.target.style.borderColor=C.purple} onBlur={e=>e.target.style.borderColor=C.border} />
+          </div>
+          <div style={{ marginBottom:24 }}>
+            <div style={{ display:"flex", justifyContent:"space-between", marginBottom:6 }}>
+              <label style={{ fontSize:11, color:C.muted }}>PASSWORD</label>
+              {mode==="login" && <button onClick={()=>{}} style={{ fontSize:11, color:C.purple, background:"none", border:"none", cursor:"pointer", fontFamily:"inherit" }}>Forgot password?</button>}
+            </div>
+            <input style={inputStyle} type="password" value={form.password} onChange={set("password")} placeholder="••••••••"
+              onFocus={e=>e.target.style.borderColor=C.purple} onBlur={e=>e.target.style.borderColor=C.border} />
+          </div>
+
+          <button onClick={onLogin} style={{
+            width:"100%", padding:"12px", borderRadius:8, border:"none", cursor:"pointer",
+            background:"linear-gradient(135deg, #7c3aed, #6d28d9)", color:"#fff",
+            fontSize:14, fontWeight:700, fontFamily:"inherit", letterSpacing:"0.03em",
+            transition:"opacity .15s",
+          }}
+          onMouseEnter={e=>e.currentTarget.style.opacity=".88"}
+          onMouseLeave={e=>e.currentTarget.style.opacity="1"}
+          >{mode==="login" ? "Sign in" : "Create account"}</button>
+
+          <p style={{ textAlign:"center", fontSize:12, color:C.muted, marginTop:20 }}>
+            {mode==="login" ? "No account? " : "Already have one? "}
+            <button onClick={()=>setMode(m=>m==="login"?"register":"login")} style={{ color:C.purple, background:"none", border:"none", cursor:"pointer", fontFamily:"inherit", fontSize:12, fontWeight:600 }}>
+              {mode==="login" ? "Register" : "Sign in"}
+            </button>
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── SIDEBAR ───────────────────────────────────────────── */
+const NAV = [
+  { id:"dashboard",      label:"Dashboard",      path:"M3 3h7v7H3zm11 0h7v7h-7zM3 14h7v7H3zm11 0h7v7h-7z" },
+  { id:"projects",       label:"Projects",        path:"M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" },
+  { id:"kanban",         label:"Kanban Board",    path:"M3 3h5v18H3zM10 3h5v12h-5zM17 3h5v15h-5z" },
+  { id:"tasks",          label:"My Tasks",        path:"M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" },
+  { id:"teams",          label:"Teams",           path:"M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 7a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" },
+  { id:"notifications",  label:"Notifications",   path:"M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0", badge:true },
+];
+
+function Sidebar({ page, setPage, unread, collapsed, setCollapsed }) {
+  return (
+    <aside style={{ width:collapsed?64:220, minWidth:collapsed?64:220, background:C.surface, borderRight:`1px solid ${C.border}`, display:"flex", flexDirection:"column", transition:"all .22s ease", overflow:"hidden", position:"relative", zIndex:10 }}>
+      {/* Logo */}
+      <div style={{ padding:"18px 14px 16px", display:"flex", alignItems:"center", gap:10, borderBottom:`1px solid ${C.border}` }}>
+        <div style={{ width:32, height:32, borderRadius:8, background:"linear-gradient(135deg,#7c3aed,#a855f7)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:15, fontWeight:800, color:"#fff", flexShrink:0 }}>T</div>
+        {!collapsed && <span style={{ fontSize:16, fontWeight:800, color:C.text, letterSpacing:"-0.5px", whiteSpace:"nowrap" }}>TaskPro</span>}
+      </div>
+
+      {/* Nav */}
+      <nav style={{ flex:1, padding:"10px 8px", display:"flex", flexDirection:"column", gap:2 }}>
+        {NAV.map(item => {
+          const active = page===item.id;
+          return (
+            <button key={item.id} onClick={()=>setPage(item.id)} style={{
+              display:"flex", alignItems:"center", gap:10,
+              padding: collapsed ? "10px 14px" : "10px 12px",
+              borderRadius:8, border:"none", cursor:"pointer",
+              background: active ? "rgba(124,58,237,.18)" : "transparent",
+              color: active ? C.purpleL : C.muted,
+              fontFamily:"inherit", fontSize:13, fontWeight: active?600:400,
+              transition:"all .15s", textAlign:"left", width:"100%", position:"relative",
+            }}
+            onMouseEnter={e=>{ if(!active){e.currentTarget.style.background="rgba(255,255,255,.04)"; e.currentTarget.style.color=C.purpleL;} }}
+            onMouseLeave={e=>{ e.currentTarget.style.background=active?"rgba(124,58,237,.18)":"transparent"; e.currentTarget.style.color=active?C.purpleL:C.muted; }}
+            >
+              <Icon d={item.path} size={17} stroke="currentColor" />
+              {!collapsed && <span style={{ whiteSpace:"nowrap" }}>{item.label}</span>}
+              {item.badge && unread>0 && !collapsed && (
+                <span style={{ marginLeft:"auto", background:C.purple, color:"#fff", borderRadius:10, padding:"1px 6px", fontSize:10, fontWeight:700 }}>{unread}</span>
+              )}
+              {item.badge && unread>0 && collapsed && (
+                <span style={{ position:"absolute", top:6, right:6, width:7, height:7, borderRadius:"50%", background:C.red }} />
+              )}
+            </button>
+          );
+        })}
+      </nav>
+
+      {/* User + collapse */}
+      <div style={{ padding:"10px 8px 12px", borderTop:`1px solid ${C.border}` }}>
+        {!collapsed && (
+          <div style={{ padding:"8px 12px", display:"flex", alignItems:"center", gap:10, marginBottom:4 }}>
+            <Avatar user={MOCK_USER} size={28} />
+            <div style={{ overflow:"hidden" }}>
+              <div style={{ fontSize:12, fontWeight:600, color:C.text, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{MOCK_USER.firstname} {MOCK_USER.lastname}</div>
+              <div style={{ fontSize:10, color:C.muted, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{MOCK_USER.email}</div>
+            </div>
+          </div>
+        )}
+        <button onClick={()=>setCollapsed(c=>!c)} style={{
+          display:"flex", alignItems:"center", justifyContent:collapsed?"center":"flex-end",
+          padding:"7px 12px", borderRadius:8, border:"none", cursor:"pointer",
+          background:"transparent", color:C.dim, fontFamily:"inherit", width:"100%", transition:"color .15s",
+        }}
+        onMouseEnter={e=>e.currentTarget.style.color=C.purpleL}
+        onMouseLeave={e=>e.currentTarget.style.color=C.dim}
+        >
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ transform:collapsed?"rotate(180deg)":"none", transition:"transform .22s" }}><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+      </div>
+    </aside>
+  );
+}
+
+/* ─── TOPBAR ────────────────────────────────────────────── */
+function Topbar({ title, subtitle, children }) {
+  return (
+    <div style={{ padding:"20px 32px 0", display:"flex", alignItems:"flex-start", justifyContent:"space-between", flexShrink:0 }}>
+      <div>
+        <h1 style={{ fontSize:20, fontWeight:800, color:C.text, letterSpacing:"-0.4px" }}>{title}</h1>
+        {subtitle && <p style={{ fontSize:12, color:C.muted, marginTop:3 }}>{subtitle}</p>}
+      </div>
+      <div style={{ display:"flex", gap:10, alignItems:"center" }}>{children}</div>
+    </div>
+  );
+}
+
+/* ─── DASHBOARD ──────────────────────────────────────────── */
+function DashboardView({ setPage, setActiveTask }) {
+  const myTasks = TASKS.filter(t=>t.assignee?.id===1);
+  const stats = [
+    { v: PROJECTS.length, l:"Total projects",  a: C.purpleL },
+    { v: TASKS.length,    l:"Active tasks",    a: C.purpleL },
+    { v: TASKS.filter(t=>t.priority==="URGENT"||t.priority==="HIGH").length, l:"High priority", a: C.amber },
+    { v: TASKS.filter(t=>t.status==="DONE").length, l:"Completed",   a: C.green },
+  ];
+
+  return (
+    <div style={{ flex:1, display:"flex", flexDirection:"column", overflow:"hidden" }}>
+      <Topbar title={<>Good morning, <span style={{color:C.purpleL}}>Alex</span> 👋</>} subtitle="Friday, April 25, 2026 · 4 tasks pending">
+        <Btn variant="ghost" size="sm">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          Search
+        </Btn>
+        <Btn size="sm">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          New Task
+        </Btn>
+      </Topbar>
+
+      <div style={{ flex:1, overflowY:"auto", padding:"20px 32px 32px" }}>
+        {/* Stats */}
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:12, marginBottom:28 }}>
+          {stats.map((s,i)=>(
+            <div key={i} style={{ background:C.card, border:`1px solid ${C.border}`, borderRadius:12, padding:"22px 24px" }}>
+              <div style={{ fontSize:34, fontWeight:800, color:s.a, letterSpacing:"-1px", marginBottom:6 }}>{s.v}</div>
+              <div style={{ fontSize:12, color:C.muted }}>{s.l}</div>
+            </div>
+          ))}
+        </div>
+
+        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:20 }}>
+          {/* My Tasks */}
+          <section>
+            <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:12 }}>
+              <h2 style={{ fontSize:11, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:".1em" }}>My Tasks</h2>
+              <button onClick={()=>setPage("tasks")} style={{ fontSize:11, color:C.purple, background:"none", border:"none", cursor:"pointer", fontFamily:"inherit" }}>View all →</button>
+            </div>
+            <div style={{ display:"flex", flexDirection:"column", gap:7 }}>
+              {myTasks.map(task=>(
+                <div key={task.id} onClick={()=>setActiveTask(task)} style={{
+                  background:C.card, border:`1px solid ${C.border}`, borderRadius:10,
+                  padding:"11px 14px", display:"flex", alignItems:"center", gap:11, cursor:"pointer", transition:"border-color .15s",
+                }}
+                onMouseEnter={e=>e.currentTarget.style.borderColor=C.dim}
+                onMouseLeave={e=>e.currentTarget.style.borderColor=C.border}
+                >
+                  <div style={{ width:7, height:7, borderRadius:"50%", background:PRIORITY_COLOR[task.priority], flexShrink:0 }} />
+                  <div style={{ flex:1, minWidth:0 }}>
+                    <div style={{ fontSize:12, color:task.status==="DONE"?C.dim:C.text, fontWeight:500, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis", textDecoration:task.status==="DONE"?"line-through":"none" }}>{task.title}</div>
+                    <div style={{ fontSize:10, color:"#4b4b6a", marginTop:2 }}>{task.dueDate}</div>
+                  </div>
+                  <Badge label={task.status.replace(/_/g," ")} color={task.status==="DONE"?C.green:task.status==="IN_PROGRESS"?C.purpleL:C.muted} />
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* Recent Projects */}
+          <section>
+            <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:12 }}>
+              <h2 style={{ fontSize:11, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:".1em" }}>Recent Projects</h2>
+              <button onClick={()=>setPage("projects")} style={{ fontSize:11, color:C.purple, background:"none", border:"none", cursor:"pointer", fontFamily:"inherit" }}>View all →</button>
+            </div>
+            <div style={{ display:"flex", flexDirection:"column", gap:7 }}>
+              {PROJECTS.slice(0,5).map(p=>(
+                <div key={p.id} style={{
+                  background:C.card, border:`1px solid ${C.border}`, borderRadius:10,
+                  padding:"11px 14px", cursor:"pointer", transition:"border-color .15s",
+                }}
+                onMouseEnter={e=>e.currentTarget.style.borderColor=C.dim}
+                onMouseLeave={e=>e.currentTarget.style.borderColor=C.border}
+                >
+                  <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:7 }}>
+                    <div style={{ width:7, height:7, borderRadius:"50%", background:STATUS_COLOR[p.status], flexShrink:0 }} />
+                    <span style={{ fontSize:12, color:C.text, fontWeight:500, flex:1, minWidth:0, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{p.name}</span>
+                    <Badge label={p.status.replace(/_/g," ")} color={STATUS_COLOR[p.status]} />
+                  </div>
+                  {/* Progress bar */}
+                  <div style={{ height:3, background:C.border, borderRadius:2 }}>
+                    <div style={{ height:"100%", width:`${p.progress}%`, background:`linear-gradient(90deg, ${C.purple}, ${C.green})`, borderRadius:2, transition:"width .4s" }} />
+                  </div>
+                  <div style={{ fontSize:10, color:"#4b4b6a", marginTop:4 }}>{p.progress}% · {p.taskCount} tasks</div>
+                </div>
+              ))}
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── PROJECTS ───────────────────────────────────────────── */
+function ProjectsView({ setPage, setActiveProject }) {
+  const [search, setSearch] = React.useState("");
+  const filtered = PROJECTS.filter(p => p.name.toLowerCase().includes(search.toLowerCase()));
+
+  return (
+    <div style={{ flex:1, display:"flex", flexDirection:"column", overflow:"hidden" }}>
+      <Topbar title="Projects" subtitle={`${PROJECTS.length} projects · ${PROJECTS.filter(p=>p.status==="IN_PROGRESS").length} in progress`}>
+        <div style={{ position:"relative" }}>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={C.muted} strokeWidth="2" style={{ position:"absolute", left:10, top:"50%", transform:"translateY(-50%)", pointerEvents:"none" }}><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search…" style={{ padding:"7px 12px 7px 32px", background:C.card, border:`1px solid ${C.border}`, borderRadius:8, color:C.text, fontSize:12, outline:"none", fontFamily:"inherit", width:180 }}
+            onFocus={e=>e.target.style.borderColor=C.purple} onBlur={e=>e.target.style.borderColor=C.border} />
+        </div>
+        <Btn size="sm">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          New Project
+        </Btn>
+      </Topbar>
+
+      <div style={{ flex:1, overflowY:"auto", padding:"20px 32px 32px" }}>
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:14 }}>
+          {filtered.map(p=>(
+            <div key={p.id} onClick={()=>{ setActiveProject(p.id); setPage("kanban"); }} style={{
+              background:C.card, border:`1px solid ${C.border}`, borderRadius:12,
+              padding:"20px 22px", cursor:"pointer", transition:"all .15s", position:"relative", overflow:"hidden",
+            }}
+            onMouseEnter={e=>{e.currentTarget.style.borderColor=C.dim; e.currentTarget.style.transform="translateY(-2px)";}}
+            onMouseLeave={e=>{e.currentTarget.style.borderColor=C.border; e.currentTarget.style.transform="none";}}
+            >
+              {/* Accent line */}
+              <div style={{ position:"absolute", top:0, left:0, right:0, height:3, background:`linear-gradient(90deg, ${STATUS_COLOR[p.status]}, transparent)` }} />
+
+              <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", marginBottom:10 }}>
+                <h3 style={{ fontSize:13, fontWeight:700, color:C.text, lineHeight:1.3, flex:1 }}>{p.name}</h3>
+                <Badge label={p.status.replace(/_/g," ")} color={STATUS_COLOR[p.status]} />
+              </div>
+              <p style={{ fontSize:11, color:C.muted, lineHeight:1.6, marginBottom:16, display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical", overflow:"hidden" }}>{p.description}</p>
+
+              <div style={{ height:4, background:C.border, borderRadius:2, marginBottom:10 }}>
+                <div style={{ height:"100%", width:`${p.progress}%`, background:`linear-gradient(90deg, ${C.purple}, ${C.green})`, borderRadius:2 }} />
+              </div>
+
+              <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", fontSize:11, color:"#4b4b6a" }}>
+                <span>{p.taskCount} tasks · {p.memberCount} members</span>
+                <span>Due {p.dueDate}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── KANBAN ────────────────────────────────────────────── */
+const COLUMNS = [
+  { status:"TODO",        label:"To Do",      color:"#6b6b8a" },
+  { status:"IN_PROGRESS", label:"In Progress", color:C.purple  },
+  { status:"IN_REVIEW",   label:"In Review",   color:C.cyan    },
+  { status:"DONE",        label:"Done",        color:C.green   },
+];
+
+function KanbanCard({ task, onClick }) {
+  return (
+    <div onClick={()=>onClick(task)} style={{
+      background:C.card, border:`1px solid ${C.border}`, borderRadius:10,
+      padding:"14px 14px 12px", cursor:"pointer", transition:"all .15s",
+    }}
+    onMouseEnter={e=>{e.currentTarget.style.borderColor=C.dim; e.currentTarget.style.transform="translateY(-1px)";}}
+    onMouseLeave={e=>{e.currentTarget.style.borderColor=C.border; e.currentTarget.style.transform="none";}}
+    >
+      {/* Priority dot + labels */}
+      <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:9 }}>
+        <span style={{ width:6, height:6, borderRadius:"50%", background:PRIORITY_COLOR[task.priority], flexShrink:0 }} />
+        {task.labels.map(l=>(
+          <span key={l.id} style={{ fontSize:9, fontWeight:700, padding:"2px 6px", borderRadius:4, background:`${l.color}22`, color:l.color }}>{l.name}</span>
+        ))}
+        <span style={{ marginLeft:"auto", fontSize:10, fontWeight:600, padding:"2px 7px", borderRadius:5, background:PRIORITY_BG[task.priority], color:PRIORITY_COLOR[task.priority] }}>{task.priority}</span>
+      </div>
+
+      <p style={{ fontSize:12, fontWeight:600, color:C.text, lineHeight:1.5, marginBottom:10 }}>{task.title}</p>
+
+      {/* Meta */}
+      <div style={{ display:"flex", alignItems:"center", gap:10, fontSize:10, color:"#4b4b6a" }}>
+        {task.comments > 0 && <span style={{ display:"flex", alignItems:"center", gap:3 }}>
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          {task.comments}
+        </span>}
+        {task.attachments > 0 && <span style={{ display:"flex", alignItems:"center", gap:3 }}>
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+          {task.attachments}
+        </span>}
+        {task.dueDate && <span style={{ marginLeft:"auto" }}>📅 {task.dueDate.slice(5)}</span>}
+        {task.assignee && <Avatar user={task.assignee} size={20} />}
+      </div>
+    </div>
+  );
+}
+
+function KanbanView({ activeProject, setActiveTask }) {
+  const project = PROJECTS.find(p=>p.id===activeProject) || PROJECTS[0];
+  const tasks = TASKS.filter(t=>t.projectId===project.id);
+
+  return (
+    <div style={{ flex:1, display:"flex", flexDirection:"column", overflow:"hidden" }}>
+      <Topbar title={project.name} subtitle={`${tasks.length} tasks · Due ${project.dueDate}`}>
+        <Badge label={project.status.replace(/_/g," ")} color={STATUS_COLOR[project.status]} />
+        <Btn variant="ghost" size="sm">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+          Settings
+        </Btn>
+        <Btn size="sm">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add Task
+        </Btn>
+      </Topbar>
+
+      <div style={{ flex:1, overflowX:"auto", overflowY:"hidden", padding:"20px 32px 32px" }}>
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:14, minWidth:860, height:"100%" }}>
+          {COLUMNS.map(col=>{
+            const colTasks = tasks.filter(t=>t.status===col.status);
+            return (
+              <div key={col.status} style={{ display:"flex", flexDirection:"column", gap:0 }}>
+                {/* Column header */}
+                <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:12, padding:"0 2px" }}>
+                  <div style={{ width:8, height:8, borderRadius:"50%", background:col.color }} />
+                  <span style={{ fontSize:11, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:".08em" }}>{col.label}</span>
+                  <span style={{ marginLeft:"auto", fontSize:11, fontWeight:600, color:C.dim, background:C.border, borderRadius:6, padding:"1px 7px" }}>{colTasks.length}</span>
+                </div>
+
+                {/* Cards */}
+                <div style={{ flex:1, overflowY:"auto", display:"flex", flexDirection:"column", gap:8, paddingRight:2 }}>
+                  {colTasks.map(t=>(
+                    <KanbanCard key={t.id} task={t} onClick={setActiveTask} />
+                  ))}
+                  {/* Add card placeholder */}
+                  <button style={{
+                    padding:"10px 14px", borderRadius:10, border:`1px dashed ${C.border}`,
+                    background:"transparent", color:C.dim, fontSize:12, cursor:"pointer",
+                    fontFamily:"inherit", transition:"all .15s", display:"flex", alignItems:"center", gap:6,
+                  }}
+                  onMouseEnter={e=>{e.currentTarget.style.borderColor=C.purple; e.currentTarget.style.color=C.purpleL;}}
+                  onMouseLeave={e=>{e.currentTarget.style.borderColor=C.border; e.currentTarget.style.color=C.dim;}}
+                  >
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    Add task
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── MY TASKS ───────────────────────────────────────────── */
+function TasksView({ setActiveTask }) {
+  const [filter, setFilter] = React.useState("ALL");
+  const statuses = ["ALL","TODO","IN_PROGRESS","IN_REVIEW","DONE"];
+  const myTasks = TASKS.filter(t=>t.assignee?.id===1);
+  const filtered = filter==="ALL" ? myTasks : myTasks.filter(t=>t.status===filter);
+
+  return (
+    <div style={{ flex:1, display:"flex", flexDirection:"column", overflow:"hidden" }}>
+      <Topbar title="My Tasks" subtitle={`${myTasks.length} assigned to you`}>
+        <Btn size="sm">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          New Task
+        </Btn>
+      </Topbar>
+
+      <div style={{ padding:"14px 32px 0", display:"flex", gap:6 }}>
+        {statuses.map(s=>(
+          <button key={s} onClick={()=>setFilter(s)} style={{
+            padding:"6px 12px", borderRadius:8, border:"none", cursor:"pointer",
+            fontFamily:"inherit", fontSize:11, fontWeight:600,
+            background: filter===s ? "rgba(124,58,237,.2)" : "transparent",
+            color: filter===s ? C.purpleL : C.muted,
+            transition:"all .15s",
+          }}
+          onMouseEnter={e=>{if(filter!==s){e.currentTarget.style.color=C.text;}}}
+          onMouseLeave={e=>{if(filter!==s){e.currentTarget.style.color=C.muted;}}}
+          >{s.replace(/_/g," ")}</button>
+        ))}
+      </div>
+
+      <div style={{ flex:1, overflowY:"auto", padding:"16px 32px 32px" }}>
+        <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+          {filtered.map(task=>(
+            <div key={task.id} onClick={()=>setActiveTask(task)} style={{
+              background:C.card, border:`1px solid ${C.border}`, borderRadius:10,
+              padding:"14px 18px", display:"flex", alignItems:"center", gap:14, cursor:"pointer", transition:"border-color .15s",
+            }}
+            onMouseEnter={e=>e.currentTarget.style.borderColor=C.dim}
+            onMouseLeave={e=>e.currentTarget.style.borderColor=C.border}
+            >
+              <div style={{ width:8, height:8, borderRadius:"50%", background:PRIORITY_COLOR[task.priority], flexShrink:0 }} />
+              <div style={{ flex:1, minWidth:0 }}>
+                <div style={{ fontSize:13, fontWeight:600, color:task.status==="DONE"?C.dim:C.text, textDecoration:task.status==="DONE"?"line-through":"none", marginBottom:4 }}>{task.title}</div>
+                <div style={{ display:"flex", gap:8, alignItems:"center" }}>
+                  {task.labels.map(l=><span key={l.id} style={{ fontSize:9, fontWeight:700, padding:"2px 6px", borderRadius:4, background:`${l.color}22`, color:l.color }}>{l.name}</span>)}
+                  <span style={{ fontSize:11, color:"#4b4b6a" }}>Due {task.dueDate}</span>
+                </div>
+              </div>
+              <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+                <span style={{ fontSize:10, fontWeight:600, padding:"3px 8px", borderRadius:6, background:PRIORITY_BG[task.priority], color:PRIORITY_COLOR[task.priority] }}>{task.priority}</span>
+                <Badge label={task.status.replace(/_/g," ")} color={task.status==="DONE"?C.green:task.status==="IN_PROGRESS"?C.purpleL:C.muted} />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── TEAMS ──────────────────────────────────────────────── */
+function TeamsView() {
+  const teams = [
+    { id:1, name:"Frontend Guild",  description:"All frontend engineers", leader:{id:1,firstname:"Alex",lastname:"Dupont"}, memberCount:6, projectCount:3 },
+    { id:2, name:"Platform Team",   description:"Backend and infrastructure",     leader:{id:2,firstname:"Marie",lastname:"Chen"},  memberCount:4, projectCount:4 },
+    { id:3, name:"Design Ops",      description:"Design and UX team",             leader:{id:3,firstname:"Lucas",lastname:"Martin"},memberCount:3, projectCount:2 },
+  ];
+  return (
+    <div style={{ flex:1, display:"flex", flexDirection:"column", overflow:"hidden" }}>
+      <Topbar title="Teams" subtitle={`${teams.length} teams`}>
+        <Btn size="sm">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          New Team
+        </Btn>
+      </Topbar>
+      <div style={{ flex:1, overflowY:"auto", padding:"20px 32px 32px" }}>
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:14 }}>
+          {teams.map(t=>(
+            <div key={t.id} style={{ background:C.card, border:`1px solid ${C.border}`, borderRadius:12, padding:"22px", cursor:"pointer", transition:"all .15s" }}
+            onMouseEnter={e=>{e.currentTarget.style.borderColor=C.dim; e.currentTarget.style.transform="translateY(-2px)";}}
+            onMouseLeave={e=>{e.currentTarget.style.borderColor=C.border; e.currentTarget.style.transform="none";}}
+            >
+              <div style={{ width:42, height:42, borderRadius:10, background:"linear-gradient(135deg,#7c3aed22,#10b98122)", border:`1px solid ${C.border}`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:18, marginBottom:14 }}>
+                {t.name[0]}
+              </div>
+              <h3 style={{ fontSize:14, fontWeight:700, color:C.text, marginBottom:6 }}>{t.name}</h3>
+              <p style={{ fontSize:11, color:C.muted, lineHeight:1.6, marginBottom:16 }}>{t.description}</p>
+              <div style={{ display:"flex", alignItems:"center", gap:10, fontSize:11, color:"#4b4b6a" }}>
+                <span style={{ display:"flex", alignItems:"center", gap:5 }}>
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                  {t.memberCount} members
+                </span>
+                <span>·</span>
+                <span>{t.projectCount} projects</span>
+              </div>
+              <div style={{ marginTop:12, display:"flex", alignItems:"center", gap:6 }}>
+                <Avatar user={t.leader} size={20} />
+                <span style={{ fontSize:10, color:C.muted }}>Led by {t.leader.firstname} {t.leader.lastname}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── NOTIFICATIONS ──────────────────────────────────────── */
+function NotificationsView() {
+  const [notifs, setNotifs] = React.useState(NOTIFICATIONS);
+  const TYPE_COLOR = { TASK_COMMENTED:C.cyan, TASK_ASSIGNED:C.purple, TASK_STATUS_CHANGED:C.amber, TASK_DUE_SOON:C.red, GENERAL:C.muted };
+  const TYPE_ICON = {
+    TASK_COMMENTED:     "M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z",
+    TASK_ASSIGNED:      "M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z",
+    TASK_STATUS_CHANGED:"M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11",
+    TASK_DUE_SOON:      "M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0zM12 9v4M12 17h.01",
+    GENERAL:            "M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0",
+  };
+  const unread = notifs.filter(n=>!n.read).length;
+
+  return (
+    <div style={{ flex:1, display:"flex", flexDirection:"column", overflow:"hidden" }}>
+      <Topbar title="Notifications" subtitle={`${unread} unread`}>
+        {unread>0 && <Btn variant="ghost" size="sm" onClick={()=>setNotifs(n=>n.map(x=>({...x,read:true})))}>Mark all read</Btn>}
+      </Topbar>
+      <div style={{ flex:1, overflowY:"auto", padding:"20px 32px 32px" }}>
+        <div style={{ display:"flex", flexDirection:"column", gap:6, maxWidth:680 }}>
+          {notifs.map(n=>(
+            <div key={n.id} onClick={()=>setNotifs(ns=>ns.map(x=>x.id===n.id?{...x,read:true}:x))} style={{
+              background: n.read ? C.card : `${C.card}`,
+              border:`1px solid ${n.read ? C.border : C.dim}`,
+              borderRadius:10, padding:"14px 18px", display:"flex", alignItems:"flex-start", gap:14, cursor:"pointer",
+              transition:"border-color .15s", position:"relative",
+            }}
+            onMouseEnter={e=>e.currentTarget.style.borderColor=C.dim}
+            onMouseLeave={e=>e.currentTarget.style.borderColor=n.read?C.border:C.dim}
+            >
+              {!n.read && <div style={{ position:"absolute", top:16, right:16, width:6, height:6, borderRadius:"50%", background:C.purple }} />}
+              <div style={{ width:34, height:34, borderRadius:9, background:`${TYPE_COLOR[n.type]}18`, border:`1px solid ${TYPE_COLOR[n.type]}30`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                <Icon d={TYPE_ICON[n.type]} size={15} stroke={TYPE_COLOR[n.type]} />
+              </div>
+              <div style={{ flex:1 }}>
+                <p style={{ fontSize:12, color:n.read?C.muted:C.text, lineHeight:1.5, fontWeight:n.read?400:500 }}>{n.message}</p>
+                <p style={{ fontSize:10, color:"#4b4b6a", marginTop:4 }}>{n.sentAt}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── TASK MODAL ─────────────────────────────────────────── */
+function TaskModal({ task, onClose }) {
+  const [comment, setComment] = React.useState("");
+  const [comments, setComments] = React.useState([
+    { id:1, user:{id:2,firstname:"Marie",lastname:"Chen"}, content:"Working on the payment endpoint integration. Should be ready for review by EOD.", time:"2h ago" },
+    { id:2, user:{id:3,firstname:"Lucas",lastname:"Martin"}, content:"Heads up — Stripe just released a new API version. We should consider upgrading.", time:"4h ago" },
+  ]);
+
+  React.useEffect(()=>{
+    const handler = e => { if(e.key==="Escape") onClose(); };
+    window.addEventListener("keydown", handler);
+    return ()=>window.removeEventListener("keydown", handler);
+  }, [onClose]);
+
+  const addComment = () => {
+    if(!comment.trim()) return;
+    setComments(c=>[...c, { id:Date.now(), user:MOCK_USER, content:comment.trim(), time:"just now" }]);
+    setComment("");
+  };
+
+  const pct = task.estimatedHours > 0 ? Math.min(100, Math.round((task.actualHours/task.estimatedHours)*100)) : 0;
+
+  return (
+    <div onClick={onClose} style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.65)", zIndex:100, display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
+      <div onClick={e=>e.stopPropagation()} style={{
+        background:C.surface, border:`1px solid ${C.border}`, borderRadius:16,
+        width:"100%", maxWidth:680, maxHeight:"90vh", overflowY:"auto",
+      }}>
+        {/* Header */}
+        <div style={{ padding:"22px 24px 18px", borderBottom:`1px solid ${C.border}`, display:"flex", alignItems:"flex-start", gap:14 }}>
+          <div style={{ flex:1 }}>
+            <div style={{ display:"flex", gap:8, marginBottom:10, flexWrap:"wrap" }}>
+              <Badge label={task.priority} color={PRIORITY_COLOR[task.priority]} bg={PRIORITY_BG[task.priority]} />
+              <Badge label={task.status.replace(/_/g," ")} color={task.status==="DONE"?C.green:task.status==="IN_PROGRESS"?C.purpleL:C.muted} />
+              {task.labels.map(l=><span key={l.id} style={{ fontSize:10, fontWeight:700, padding:"2px 8px", borderRadius:6, background:`${l.color}22`, color:l.color }}>{l.name}</span>)}
+            </div>
+            <h2 style={{ fontSize:17, fontWeight:800, color:C.text, lineHeight:1.35, letterSpacing:"-0.3px" }}>{task.title}</h2>
+          </div>
+          <button onClick={onClose} style={{ background:"transparent", border:"none", cursor:"pointer", color:C.muted, padding:4, borderRadius:6, flexShrink:0 }}
+          onMouseEnter={e=>e.currentTarget.style.color=C.text} onMouseLeave={e=>e.currentTarget.style.color=C.muted}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+
+        <div style={{ padding:"20px 24px" }}>
+          {/* Description */}
+          <p style={{ fontSize:13, color:C.muted, lineHeight:1.7, marginBottom:22 }}>{task.description}</p>
+
+          {/* Meta grid */}
+          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:14, marginBottom:22 }}>
+            {[
+              { label:"Assignee", value: task.assignee ? `${task.assignee.firstname} ${task.assignee.lastname}` : "Unassigned" },
+              { label:"Due Date", value: task.dueDate },
+              { label:"Est. Hours", value: `${task.actualHours}h / ${task.estimatedHours}h` },
+            ].map(m=>(
+              <div key={m.label} style={{ background:C.card, border:`1px solid ${C.border}`, borderRadius:9, padding:"12px 14px" }}>
+                <div style={{ fontSize:10, color:C.muted, marginBottom:5, textTransform:"uppercase", letterSpacing:".08em" }}>{m.label}</div>
+                <div style={{ fontSize:12, fontWeight:600, color:C.text }}>{m.value}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* Progress */}
+          {task.estimatedHours > 0 && (
+            <div style={{ marginBottom:22 }}>
+              <div style={{ display:"flex", justifyContent:"space-between", fontSize:11, color:C.muted, marginBottom:7 }}>
+                <span>Progress</span>
+                <span style={{ color:C.text, fontWeight:600 }}>{pct}%</span>
+              </div>
+              <div style={{ height:6, background:C.border, borderRadius:3 }}>
+                <div style={{ height:"100%", width:`${pct}%`, background:`linear-gradient(90deg, ${C.purple}, ${C.green})`, borderRadius:3, transition:"width .4s" }} />
+              </div>
+            </div>
+          )}
+
+          {/* Comments */}
+          <div>
+            <h3 style={{ fontSize:11, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:".1em", marginBottom:12 }}>Comments ({comments.length})</h3>
+            <div style={{ display:"flex", flexDirection:"column", gap:10, marginBottom:14 }}>
+              {comments.map(c=>(
+                <div key={c.id} style={{ display:"flex", gap:10 }}>
+                  <Avatar user={c.user} size={28} />
+                  <div style={{ flex:1, background:C.card, border:`1px solid ${C.border}`, borderRadius:9, padding:"10px 14px" }}>
+                    <div style={{ display:"flex", justifyContent:"space-between", marginBottom:6 }}>
+                      <span style={{ fontSize:11, fontWeight:700, color:C.text }}>{c.user.firstname} {c.user.lastname}</span>
+                      <span style={{ fontSize:10, color:"#4b4b6a" }}>{c.time}</span>
+                    </div>
+                    <p style={{ fontSize:12, color:C.muted, lineHeight:1.6 }}>{c.content}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Add comment */}
+            <div style={{ display:"flex", gap:10 }}>
+              <Avatar user={MOCK_USER} size={28} />
+              <div style={{ flex:1, background:C.card, border:`1px solid ${C.border}`, borderRadius:9, padding:"10px 14px", display:"flex", flexDirection:"column", gap:8, transition:"border-color .15s" }}>
+                <textarea value={comment} onChange={e=>setComment(e.target.value)} placeholder="Write a comment…" rows={2} style={{
+                  background:"transparent", border:"none", outline:"none", resize:"none",
+                  color:C.text, fontSize:12, fontFamily:"inherit", lineHeight:1.6,
+                }} />
+                {comment.trim() && (
+                  <div style={{ display:"flex", justifyContent:"flex-end" }}>
+                    <Btn size="sm" onClick={addComment}>Post comment</Btn>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── TWEAKS PANEL ───────────────────────────────────────── */
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "accentColor": "#7c3aed",
+  "sidebarCollapsed": false,
+  "compactCards": false
+}/*EDITMODE-END*/;
+
+function TweaksPanel({ tweaks, setTweaks, visible, onClose }) {
+  if (!visible) return null;
+  return (
+    <div style={{
+      position:"fixed", bottom:20, right:20, zIndex:200,
+      background:C.surface, border:`1px solid ${C.border}`, borderRadius:14,
+      padding:"18px 20px", width:240, boxShadow:"0 20px 60px rgba(0,0,0,.6)",
+    }}>
+      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:16 }}>
+        <span style={{ fontSize:12, fontWeight:700, color:C.text }}>Tweaks</span>
+        <button onClick={onClose} style={{ background:"none", border:"none", cursor:"pointer", color:C.muted }}>✕</button>
+      </div>
+      <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
+        <div>
+          <label style={{ fontSize:11, color:C.muted, display:"block", marginBottom:6 }}>ACCENT COLOR</label>
+          <div style={{ display:"flex", gap:8 }}>
+            {["#7c3aed","#2563eb","#10b981","#f59e0b","#ef4444"].map(c=>(
+              <div key={c} onClick={()=>setTweaks(t=>({...t,accentColor:c}))} style={{
+                width:24, height:24, borderRadius:6, background:c, cursor:"pointer",
+                border:`2px solid ${tweaks.accentColor===c?"#fff":"transparent"}`, transition:"border .15s",
+              }} />
+            ))}
+          </div>
+        </div>
+        <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+          <span style={{ fontSize:11, color:C.muted }}>COMPACT CARDS</span>
+          <div onClick={()=>setTweaks(t=>({...t,compactCards:!t.compactCards}))} style={{
+            width:36, height:20, borderRadius:10, background:tweaks.compactCards?tweaks.accentColor:C.border,
+            position:"relative", cursor:"pointer", transition:"background .2s",
+          }}>
+            <div style={{ position:"absolute", top:2, left:tweaks.compactCards?18:2, width:16, height:16, borderRadius:8, background:"#fff", transition:"left .2s" }} />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── APP ───────────────────────────────────────────────── */
+function App() {
+  const [authed, setAuthed] = React.useState(false);
+  const [page, setPage] = React.useState("dashboard");
+  const [collapsed, setCollapsed] = React.useState(false);
+  const [activeTask, setActiveTask] = React.useState(null);
+  const [activeProject, setActiveProject] = React.useState(1);
+  const [tweaks, setTweaks] = React.useState(TWEAK_DEFAULTS);
+  const [tweaksOpen, setTweaksOpen] = React.useState(false);
+
+  // Tweaks host protocol
+  React.useEffect(()=>{
+    const handler = e => {
+      if(e.data?.type==="__activate_edit_mode")   setTweaksOpen(true);
+      if(e.data?.type==="__deactivate_edit_mode")  setTweaksOpen(false);
+    };
+    window.addEventListener("message", handler);
+    window.parent.postMessage({type:"__edit_mode_available"},"*");
+    return ()=>window.removeEventListener("message", handler);
+  },[]);
+
+  const closeTweaks = () => {
+    setTweaksOpen(false);
+    window.parent.postMessage({type:"__edit_mode_dismissed"},"*");
+  };
+
+  const unread = NOTIFICATIONS.filter(n=>!n.read).length;
+
+  if(!authed) return <AuthScreen onLogin={()=>setAuthed(true)} />;
+
+  const pageMap = {
+    dashboard:     <DashboardView setPage={setPage} setActiveTask={setActiveTask} setActiveProject={p=>{setActiveProject(p);setPage("kanban");}} />,
+    projects:      <ProjectsView setPage={setPage} setActiveProject={p=>{setActiveProject(p);setPage("kanban");}} />,
+    kanban:        <KanbanView activeProject={activeProject} setActiveTask={setActiveTask} />,
+    tasks:         <TasksView setActiveTask={setActiveTask} />,
+    teams:         <TeamsView />,
+    notifications: <NotificationsView />,
+  };
+
+  // Apply accent color CSS variable
+  const accentStyle = tweaks.accentColor !== "#7c3aed" ? `
+    <style>
+      :root { --accent: ${tweaks.accentColor}; }
+    </style>
+  ` : "";
+
+  return (
+    <div style={{ height:"100%", display:"flex", position:"relative", background:C.bg }}>
+      <GridBg opacity={0.02} />
+      <Sidebar page={page} setPage={setPage} unread={unread} collapsed={collapsed} setCollapsed={setCollapsed} />
+      <main style={{ flex:1, display:"flex", flexDirection:"column", overflow:"hidden", position:"relative" }}>
+        {pageMap[page] || pageMap.dashboard}
+      </main>
+
+      {activeTask && <TaskModal task={activeTask} onClose={()=>setActiveTask(null)} />}
+      <TweaksPanel tweaks={tweaks} setTweaks={setTweaks} visible={tweaksOpen} onClose={closeTweaks} />
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>
