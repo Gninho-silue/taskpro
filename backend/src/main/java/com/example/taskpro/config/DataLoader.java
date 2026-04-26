@@ -2,6 +2,7 @@ package com.example.taskpro.config;
 
 import com.example.taskpro.model.*;
 import com.example.taskpro.repository.*;
+import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationArguments;
@@ -34,6 +35,7 @@ public class DataLoader implements ApplicationRunner {
     private final TeamRepository    teamRepository;
     private final LabelRepository   labelRepository;
     private final PasswordEncoder   passwordEncoder;
+    private final EntityManager     em;
 
     private static final String SEED_EMAIL = "alex.dupont@taskpro.dev";
     private static final String PASSWORD   = "Dev@12345!";
@@ -53,7 +55,10 @@ public class DataLoader implements ApplicationRunner {
         Long marieId = userRepository.save(user("Marie", "Chen",    "marie.chen@taskpro.dev",    Role.TEAM_LEADER)).getId();
         Long lucasId = userRepository.save(user("Lucas", "Martin",  "lucas.martin@taskpro.dev",  Role.USER)).getId();
 
-        // Reload so Hibernate initialises lazy collection proxies
+        // Flush + clear so findById reads from DB (not first-level cache) and gets
+        // properly initialised Hibernate PersistentSet proxies instead of null.
+        em.flush();
+        em.clear();
         User alex  = userRepository.findById(alexId).orElseThrow();
         User marie = userRepository.findById(marieId).orElseThrow();
         User lucas = userRepository.findById(lucasId).orElseThrow();
@@ -94,6 +99,8 @@ public class DataLoader implements ApplicationRunner {
                 .build());
 
         // Reload users again after team saves to get fresh state, then add projects
+        em.flush();
+        em.clear();
         alex  = userRepository.findById(alexId).orElseThrow();
         marie = userRepository.findById(marieId).orElseThrow();
         lucas = userRepository.findById(lucasId).orElseThrow();
