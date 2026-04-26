@@ -19,7 +19,7 @@ function getGreeting() {
 
 function useMyTasks(userId: number | undefined) {
   return useQuery({
-    queryKey: ['tasks', 'assignee', userId],
+    queryKey: ['tasks', 'assignee', userId, 'dashboard'],
     queryFn: async () => {
       const res = await api.get<ApiResponse<PageResponse<TaskBasicDTO>>>(
         `/tasks/assignee/${userId}?page=0&size=20`,

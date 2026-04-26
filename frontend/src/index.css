@@ -89,3 +89,9 @@ body {
 .accent-line-on-hold     { background: linear-gradient(to right, var(--color-amber),      transparent); }
 .accent-line-completed   { background: linear-gradient(to right, var(--color-green),      transparent); }
 .accent-line-cancelled   { background: linear-gradient(to right, var(--color-red),        transparent); }
+
+/* ── Filter tab states ───────────────────────────────────────── */
+.tab-active          { background: rgba(124,58,237,0.2);  color: var(--color-accent-light); }
+.tab-inactive        { background: transparent;            color: var(--color-text-muted); }
+.tab-badge-active    { background: rgba(124,58,237,0.3);  color: var(--color-accent-light); }
+.tab-badge-inactive  { background: rgba(107,107,138,0.15); color: var(--color-text-muted); }
