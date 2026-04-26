@@ -7,6 +7,7 @@ import {
   asDTOs,
   createProject, updateProject, updateProjectStatus, deleteProject, getProjectDetail,
   createTask, updateTask, updateTaskStatus, deleteTask, getTaskDetail, addComment,
+  getTeamList, getTeamDetail, createTeam, deleteTeam,
   markNotificationRead, markAllRead, deleteNotification, clearAllNotifications,
 } from './data';
 import type { PageResponse, ProjectStatus, TaskStatus } from '../types';
@@ -101,6 +102,24 @@ const routes: Route[] = [
   {
     method: 'PUT', re: /^\/projects\/(\d+)\/remove-member$/,
     handle: () => null,
+  },
+
+  // ── Teams ─────────────────────────────────────────────────────
+  {
+    method: 'GET', re: /^\/teams$/,
+    handle: () => page(getTeamList()),
+  },
+  {
+    method: 'POST', re: /^\/teams$/,
+    handle: (_m, config) => createTeam(parseBody(config)),
+  },
+  {
+    method: 'GET', re: /^\/teams\/(\d+)$/,
+    handle: ([, id]) => getTeamDetail(Number(id)),
+  },
+  {
+    method: 'DELETE', re: /^\/teams\/(\d+)$/,
+    handle: ([, id]) => { deleteTeam(Number(id)); return null; },
   },
 
   // ── Tasks ─────────────────────────────────────────────────────

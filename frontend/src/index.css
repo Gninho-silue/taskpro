@@ -90,6 +90,11 @@ body {
 .accent-line-completed   { background: linear-gradient(to right, var(--color-green),      transparent); }
 .accent-line-cancelled   { background: linear-gradient(to right, var(--color-red),        transparent); }
 
+/* ── Team card icon box ──────────────────────────────────────── */
+.team-icon-box {
+  background: linear-gradient(135deg, rgba(124,58,237,0.13), rgba(16,185,129,0.13));
+}
+
 /* ── Filter tab states ───────────────────────────────────────── */
 .tab-active          { background: rgba(124,58,237,0.2);  color: var(--color-accent-light); }
 .tab-inactive        { background: transparent;            color: var(--color-text-muted); }

@@ -1,5 +1,5 @@
 import type {
-  UserBasicDTO, ProjectBasicDTO, ProjectDetailDTO,
+  UserBasicDTO, ProjectBasicDTO, ProjectDetailDTO, TeamDetailDTO,
   TaskBasicDTO, TaskDetailDTO, NotificationBasicDTO,
   CommentBasicDTO, LabelBasicDTO, TaskAttachmentBasicDTO,
   TaskStatus, ProjectStatus,
@@ -130,9 +130,38 @@ export let mockNotifications: NotificationBasicDTO[] = [
   { id: 5, message: 'Lucas Martin joined E-Commerce Redesign',                    type: 'GENERAL',            read: true,  sentAt: hoursAgo(50) },
 ];
 
+// ── Teams ──────────────────────────────────────────────────────
+export let mockTeams: TeamDetailDTO[] = [
+  {
+    id: 1,
+    name: 'Frontend Guild',
+    description: 'UI/UX and React specialists focused on design systems and user experience',
+    leader: mockUser,
+    members: [mockUser, MARIE],
+    projects: [mockProjects[0], mockProjects[1]],
+  },
+  {
+    id: 2,
+    name: 'Backend Core',
+    description: 'API architecture, infrastructure, performance and scalability',
+    leader: LUCAS,
+    members: [LUCAS, mockUser, MARIE],
+    projects: [mockProjects[2], mockProjects[4]],
+  },
+  {
+    id: 3,
+    name: 'QA & Security',
+    description: 'Automated testing, security audits, compliance and vulnerability management',
+    leader: MARIE,
+    members: [MARIE, LUCAS],
+    projects: [mockProjects[5]],
+  },
+];
+
 // ── ID counters ────────────────────────────────────────────────
 let _nextProjectId = 100;
 let _nextTaskId    = 100;
+let _nextTeamId    = 10;
 
 // ── Helpers ────────────────────────────────────────────────────
 export function asDTOs(tasks: typeof mockTasks): TaskBasicDTO[] {
@@ -238,6 +267,32 @@ export function addComment(taskId: number, content: string): CommentBasicDTO {
   }
   mockTaskExtras[taskId].comments = [...mockTaskExtras[taskId].comments, comment];
   return comment;
+}
+
+// ── Team mutations ─────────────────────────────────────────────
+export function getTeamList(): TeamDetailDTO[] {
+  return [...mockTeams];
+}
+
+export function getTeamDetail(id: number): TeamDetailDTO | null {
+  return mockTeams.find((t) => t.id === id) ?? null;
+}
+
+export function createTeam(body: { name?: string; description?: string }): TeamDetailDTO {
+  const team: TeamDetailDTO = {
+    id:          ++_nextTeamId,
+    name:        body.name ?? 'Untitled Team',
+    description: body.description ?? '',
+    leader:      mockUser,
+    members:     [mockUser],
+    projects:    [],
+  };
+  mockTeams = [...mockTeams, team];
+  return team;
+}
+
+export function deleteTeam(id: number) {
+  mockTeams = mockTeams.filter((t) => t.id !== id);
 }
 
 // ── Notification mutations ─────────────────────────────────────
