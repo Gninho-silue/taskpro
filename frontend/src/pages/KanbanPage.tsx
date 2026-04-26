@@ -18,7 +18,7 @@ import { StatusBadge, PriorityBadge, PriorityDot, StatusDot } from '../component
 import { TaskDetailModal } from '../components/TaskDetailModal';
 import type {
   ApiResponse, PageResponse,
-  ProjectDetailDTO, TaskBasicDTO, TaskStatus, TaskPriority, TaskCreateDTO,
+  ProjectDetailDTO, TaskBasicDTO, TaskStatus, TaskPriority, TaskCreateDTO, UserBasicDTO,
 } from '../types';
 
 // ── Constants ──────────────────────────────────────────────────
@@ -43,18 +43,22 @@ const PRIORITY_OPTIONS: { value: TaskPriority; label: string }[] = [
 
 // ── Schemas ────────────────────────────────────────────────────
 const addTaskSchema = z.object({
-  title:       z.string().min(3, 'At least 3 characters').max(100, 'Max 100 characters'),
-  description: z.string().max(2000).optional(),
-  priority:    z.enum(['LOW', 'MEDIUM', 'HIGH', 'URGENT']),
-  dueDate:     z.string().optional(),
-  status:      z.enum(['TODO', 'IN_PROGRESS', 'IN_REVIEW', 'DONE']),
+  title:          z.string().min(3, 'At least 3 characters').max(100, 'Max 100 characters'),
+  description:    z.string().max(2000).optional(),
+  priority:       z.enum(['LOW', 'MEDIUM', 'HIGH', 'URGENT']),
+  dueDate:        z.string().optional(),
+  estimatedHours: z.string().optional(),
+  assigneeId:     z.string().optional(),
+  status:         z.enum(['TODO', 'IN_PROGRESS', 'IN_REVIEW', 'DONE']),
 });
 
 const editTaskSchema = z.object({
-  title:       z.string().min(3, 'At least 3 characters').max(100, 'Max 100 characters'),
-  description: z.string().max(2000).optional(),
-  priority:    z.enum(['LOW', 'MEDIUM', 'HIGH', 'URGENT']),
-  dueDate:     z.string().optional(),
+  title:          z.string().min(3, 'At least 3 characters').max(100, 'Max 100 characters'),
+  description:    z.string().max(2000).optional(),
+  priority:       z.enum(['LOW', 'MEDIUM', 'HIGH', 'URGENT']),
+  dueDate:        z.string().optional(),
+  estimatedHours: z.string().optional(),
+  assigneeId:     z.string().optional(),
 });
 
 type AddTaskForm  = z.infer<typeof addTaskSchema>;
@@ -100,11 +104,13 @@ function useCreateTask(projectId: number) {
   return useMutation({
     mutationFn: async (data: AddTaskForm) => {
       const payload: TaskCreateDTO = {
-        title:       data.title,
-        description: data.description || undefined,
-        priority:    data.priority,
-        status:      data.status,
-        dueDate:     toIso(data.dueDate),
+        title:          data.title,
+        description:    data.description || undefined,
+        priority:       data.priority,
+        status:         data.status,
+        dueDate:        toIso(data.dueDate),
+        estimatedHours: data.estimatedHours ? Number(data.estimatedHours) : undefined,
+        assigneeId:     data.assigneeId    ? Number(data.assigneeId)    : undefined,
         projectId,
       };
       const res = await api.post<ApiResponse<TaskBasicDTO>>('/tasks', payload);
@@ -123,15 +129,20 @@ function useUpdateTask(taskId: number, projectId: number) {
   return useMutation({
     mutationFn: async (data: EditTaskForm) => {
       await api.patch(`/tasks/${taskId}`, {
-        title:       data.title,
-        description: data.description || undefined,
-        priority:    data.priority,
-        dueDate:     toIso(data.dueDate),
+        title:          data.title,
+        description:    data.description || undefined,
+        priority:       data.priority,
+        dueDate:        toIso(data.dueDate),
+        estimatedHours: data.estimatedHours ? Number(data.estimatedHours) : undefined,
         projectId,
       });
+      if (data.assigneeId) {
+        await api.put(`/tasks/${taskId}/assign?userId=${data.assigneeId}`);
+      }
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['tasks', 'project'] });
+      qc.invalidateQueries({ queryKey: ['task', taskId] });
       toast.success('Task updated');
     },
     onError: apiError('Failed to update task'),
@@ -253,6 +264,7 @@ export function KanbanPage() {
           <AddTaskModal
             projectId={Number(id)}
             defaultStatus={addStatus}
+            members={project?.members ?? []}
             onClose={() => setAddStatus(null)}
           />
         )}
@@ -260,6 +272,7 @@ export function KanbanPage() {
           <EditTaskModal
             task={editingTask}
             projectId={Number(id)}
+            members={project?.members ?? []}
             onClose={() => setEditingTask(null)}
           />
         )}
@@ -427,15 +440,7 @@ function TaskCard({
       </div>
 
       {/* Title */}
-      <p
-        className="text-[12px] font-semibold text-text-primary leading-[1.5] mb-2.5"
-        style={{
-          display: '-webkit-box',
-          WebkitLineClamp: 3,
-          WebkitBoxOrient: 'vertical',
-          overflow: 'hidden',
-        }}
-      >
+      <p className="text-[12px] font-semibold text-text-primary leading-[1.5] mb-2.5 line-clamp-3">
         {task.title}
       </p>
 
@@ -458,10 +463,11 @@ function TaskCard({
 
 // ── Add Task Modal ─────────────────────────────────────────────
 function AddTaskModal({
-  projectId, defaultStatus, onClose,
+  projectId, defaultStatus, members, onClose,
 }: {
   projectId:     number;
   defaultStatus: KanbanStatus;
+  members:       UserBasicDTO[];
   onClose:       () => void;
 }) {
   const mutation = useCreateTask(projectId);
@@ -510,6 +516,19 @@ function AddTaskModal({
           </select>
         </Field>
       </div>
+      <div className="grid grid-cols-2 gap-3">
+        <Field label="Assignee">
+          <select {...register('assigneeId')} className={INPUT}>
+            <option value="">Unassigned</option>
+            {members.map((m) => (
+              <option key={m.id} value={m.id}>{m.firstname} {m.lastname}</option>
+            ))}
+          </select>
+        </Field>
+        <Field label="Est. Hours">
+          <input type="number" min={0} step={0.5} {...register('estimatedHours')} placeholder="0" className={INPUT} />
+        </Field>
+      </div>
       <Field label="Due Date">
         <input type="date" {...register('dueDate')} className={INPUT} />
       </Field>
@@ -519,20 +538,22 @@ function AddTaskModal({
 
 // ── Edit Task Modal ────────────────────────────────────────────
 function EditTaskModal({
-  task, projectId, onClose,
+  task, projectId, members, onClose,
 }: {
   task:      TaskBasicDTO;
   projectId: number;
+  members:   UserBasicDTO[];
   onClose:   () => void;
 }) {
   const mutation = useUpdateTask(task.id, projectId);
   const { register, handleSubmit, formState: { errors } } = useForm<EditTaskForm>({
     resolver: zodResolver(editTaskSchema),
     defaultValues: {
-      title:       task.title,
-      description: task.description ?? '',
-      priority:    task.priority,
-      dueDate:     toDateInput(task.dueDate),
+      title:          task.title,
+      description:    task.description ?? '',
+      priority:       task.priority,
+      dueDate:        toDateInput(task.dueDate),
+      estimatedHours: task.estimatedHours > 0 ? String(task.estimatedHours) : '',
     },
   });
   useEscClose(onClose);
@@ -561,6 +582,19 @@ function EditTaskModal({
         </Field>
         <Field label="Due Date">
           <input type="date" {...register('dueDate')} className={INPUT} />
+        </Field>
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <Field label="Reassign to">
+          <select {...register('assigneeId')} className={INPUT}>
+            <option value="">— keep current —</option>
+            {members.map((m) => (
+              <option key={m.id} value={m.id}>{m.firstname} {m.lastname}</option>
+            ))}
+          </select>
+        </Field>
+        <Field label="Est. Hours">
+          <input type="number" min={0} step={0.5} {...register('estimatedHours')} placeholder="0" className={INPUT} />
         </Field>
       </div>
     </TaskModal>

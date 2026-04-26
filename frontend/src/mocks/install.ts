@@ -6,7 +6,7 @@ import {
   mockUser, mockProjects, mockTasks, mockNotifications,
   asDTOs,
   createProject, updateProject, updateProjectStatus, deleteProject, getProjectDetail,
-  createTask, updateTask, updateTaskStatus, deleteTask, getTaskDetail, addComment,
+  createTask, updateTask, updateTaskStatus, deleteTask, getTaskDetail, addComment, assignTask,
   getTeamList, getTeamDetail, createTeam, deleteTeam,
   markNotificationRead, markAllRead, deleteNotification, clearAllNotifications,
 } from './data';
@@ -163,7 +163,10 @@ const routes: Route[] = [
   },
   {
     method: 'PUT', re: /^\/tasks\/(\d+)\/assign$/,
-    handle: () => null,
+    handle: ([, id], _config, params) => {
+      assignTask(Number(id), Number(params.get('userId')));
+      return null;
+    },
   },
 
   // ── Notifications ─────────────────────────────────────────────

@@ -18,6 +18,8 @@ export const mockUser: UserBasicDTO = {
 const MARIE: UserBasicDTO = { id: 2, firstname: 'Marie',  lastname: 'Chen',   email: 'marie.chen@taskpro.dev' };
 const LUCAS: UserBasicDTO = { id: 3, firstname: 'Lucas',  lastname: 'Martin', email: 'lucas.martin@taskpro.dev' };
 
+export const mockUsers: UserBasicDTO[] = [mockUser, MARIE, LUCAS];
+
 // ── Projects ───────────────────────────────────────────────────
 export let mockProjects: ProjectBasicDTO[] = [
   { id: 1, name: 'E-Commerce Redesign', description: 'Full redesign of the storefront and checkout flow', status: 'IN_PROGRESS', startDate: '2026-03-01T00:00:00', dueDate: '2026-06-30T00:00:00' },
@@ -222,7 +224,7 @@ export function getTaskDetail(id: number): TaskDetailDTO | null {
   };
 }
 
-export function createTask(body: Partial<TaskBasicDTO> & { projectId?: number }): TaskBasicDTO {
+export function createTask(body: Partial<TaskBasicDTO> & { projectId?: number; assigneeId?: number }): TaskBasicDTO {
   const id = ++_nextTaskId;
   const task = {
     id,
@@ -236,9 +238,17 @@ export function createTask(body: Partial<TaskBasicDTO> & { projectId?: number })
     _projectId:     body.projectId ?? 0,
   } as TaskBasicDTO & { _projectId: number };
   mockTasks = [...mockTasks, task];
-  mockTaskExtras[id] = { assignee: null, labels: [], comments: [], attachments: [] };
+  const assignee = body.assigneeId ? (mockUsers.find((u) => u.id === body.assigneeId) ?? null) : null;
+  mockTaskExtras[id] = { assignee, labels: [], comments: [], attachments: [] };
   const { _projectId: _p, ...dto } = task;
   return dto;
+}
+
+export function assignTask(taskId: number, userId: number) {
+  const user = mockUsers.find((u) => u.id === userId) ?? null;
+  if (mockTaskExtras[taskId]) {
+    mockTaskExtras[taskId] = { ...mockTaskExtras[taskId], assignee: user };
+  }
 }
 
 export function updateTask(id: number, body: Partial<TaskBasicDTO>) {
