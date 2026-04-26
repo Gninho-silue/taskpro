@@ -75,3 +75,17 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: #2a2a48;
 }
+
+/* ── Shared shadows ──────────────────────────────────────────── */
+.shadow-modal    { box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6); }
+.shadow-dropdown { box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5); }
+
+/* ── Modal overlay ───────────────────────────────────────────── */
+.bg-overlay { background: rgba(0, 0, 0, 0.65); }
+
+/* ── Project status accent lines ─────────────────────────────── */
+.accent-line-planning    { background: linear-gradient(to right, var(--color-text-muted), transparent); }
+.accent-line-in-progress { background: linear-gradient(to right, var(--color-accent),     transparent); }
+.accent-line-on-hold     { background: linear-gradient(to right, var(--color-amber),      transparent); }
+.accent-line-completed   { background: linear-gradient(to right, var(--color-green),      transparent); }
+.accent-line-cancelled   { background: linear-gradient(to right, var(--color-red),        transparent); }
