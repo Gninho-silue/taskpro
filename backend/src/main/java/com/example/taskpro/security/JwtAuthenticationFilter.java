@@ -44,8 +44,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
-        jwt = authHeader.substring(7); // enlever "Bearer "
-        username = jwtService.extractUsername(jwt);
+        jwt = authHeader.substring(7);
+        try {
+            username = jwtService.extractUsername(jwt);
+        } catch (Exception e) {
+            // Token is malformed, expired, or a mock token — treat as unauthenticated
+            filterChain.doFilter(request, response);
+            return;
+        }
 
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
