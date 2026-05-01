@@ -27,6 +27,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -68,7 +69,7 @@ public class ProjectService {
         }
 
         if (project.getLabels() != null) {
-            dto.setLabels(project.getLabels().stream()
+            dto.setLabels(new ArrayList<>(project.getLabels()).stream()
                     .map(label -> new LabelBasicDTO(
                             label.getId(),
                             label.getName(),
@@ -78,7 +79,7 @@ public class ProjectService {
         }
 
         if (project.getTasks() != null) {
-            dto.setTasks(project.getTasks().stream()
+            dto.setTasks(new ArrayList<>(project.getTasks()).stream()
                     .map(task -> new TaskBasicDTO(
                             task.getId(),
                             task.getTitle(),
@@ -88,13 +89,12 @@ public class ProjectService {
                             task.getDueDate(),
                             task.getEstimatedHours(),
                             task.getActualHours()
-
                     )).collect(Collectors.toSet())
             );
-
         }
+
         if (project.getMembers() != null) {
-            dto.setMembers(project.getMembers().stream()
+            dto.setMembers(new ArrayList<>(project.getMembers()).stream()
                     .map(user -> new UserBasicDTO(
                             user.getId(),
                             user.getFirstname(),

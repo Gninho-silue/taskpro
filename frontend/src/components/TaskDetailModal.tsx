@@ -98,7 +98,7 @@ export function TaskDetailModal({ taskId, onClose }: Props) {
               <div className="flex items-center gap-2 flex-wrap mb-3">
                 <PriorityBadge priority={task.priority} />
                 <StatusBadge   status={task.status} />
-                {task.labels.map((l) => (
+                {(task.labels ?? []).map((l) => (
                   <span
                     key={l.id}
                     className="inline-flex items-center rounded-md px-2 py-0.5 text-[10px] font-semibold"
@@ -168,12 +168,12 @@ export function TaskDetailModal({ taskId, onClose }: Props) {
               {/* Comments */}
               <div>
                 <p className="text-[11px] font-bold uppercase text-text-muted tracking-[0.08em] mb-3">
-                  Comments ({task.comments.length})
+                  Comments ({(task.comments ?? []).length})
                 </p>
 
-                {task.comments.length > 0 && (
+                {(task.comments ?? []).length > 0 && (
                   <div className="flex flex-col gap-3 mb-4">
-                    {task.comments.map((c) => (
+                    {(task.comments ?? []).map((c) => (
                       <CommentRow key={c.id} comment={c} />
                     ))}
                   </div>

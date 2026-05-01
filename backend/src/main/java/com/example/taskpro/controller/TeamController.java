@@ -1,6 +1,5 @@
 package com.example.taskpro.controller;
 
-import com.example.taskpro.dto.team.TeamBasicDTO;
 import com.example.taskpro.dto.team.TeamCreateDTO;
 import com.example.taskpro.dto.team.TeamDetailDTO;
 import com.example.taskpro.handler.SuccessResponse;
@@ -89,7 +88,7 @@ public class TeamController extends BaseController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
-        PageResponse<TeamBasicDTO> teams = teamService.getAllTeams(page, size);
+        PageResponse<TeamDetailDTO> teams = teamService.getAllTeams(page, size);
         return okResponse(teams, "Teams fetched successfully");
     }
 

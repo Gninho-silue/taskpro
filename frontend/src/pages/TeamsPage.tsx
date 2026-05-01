@@ -65,7 +65,7 @@ export function TeamsPage() {
         ) : teams.length === 0 ? (
           <EmptyState onNew={() => setShowCreate(true)} />
         ) : (
-          <div className="grid grid-cols-3 gap-[14px]">
+          <div className="grid grid-cols-3 gap-3.5">
             {teams.map((team) => (
               <TeamCard
                 key={team.id}
@@ -106,11 +106,13 @@ function TeamCard({
   onDelete: () => void;
 }) {
   const initial = team.name.charAt(0).toUpperCase();
-  const leaderName = `${team.leader.firstname} ${team.leader.lastname}`;
+  const leaderName = team.leader
+    ? `${team.leader.firstname} ${team.leader.lastname}`
+    : 'No leader';
 
   return (
     <motion.div
-      className="relative group bg-surface rounded-[12px] border border-border p-5 flex flex-col gap-4 transition-colors hover:border-border-hover cursor-default"
+      className="relative group bg-surface rounded-xl border border-border p-5 flex flex-col gap-4 transition-colors hover:border-border-hover cursor-default"
       whileHover={{ y: -2 }}
       transition={{ duration: 0.15 }}
     >
@@ -126,16 +128,13 @@ function TeamCard({
 
       {/* Icon + name row */}
       <div className="flex items-center gap-3.5">
-        <div className="team-icon-box w-[42px] h-[42px] rounded-[10px] flex items-center justify-center shrink-0">
+        <div className="team-icon-box w-10.5 h-10.5 rounded-[10px] flex items-center justify-center shrink-0">
           <span className="text-[18px] font-extrabold text-accent-light">{initial}</span>
         </div>
         <div className="min-w-0">
           <p className="text-[14px] font-bold text-text-primary truncate">{team.name}</p>
           {team.description && (
-            <p
-              className="text-[11px] text-text-muted mt-0.5 line-clamp-2"
-              style={{ lineHeight: 1.6 }}
-            >
+            <p className="text-[11px] text-text-muted mt-0.5 line-clamp-2 leading-relaxed">
               {team.description}
             </p>
           )}
@@ -263,7 +262,7 @@ function Overlay({ children, onClose }: { children: React.ReactNode; onClose: ()
       onClick={onClose}
     >
       <motion.div
-        className="w-full max-w-[480px] bg-surface rounded-2xl border border-border p-6 shadow-modal"
+        className="w-full max-w-120 bg-surface rounded-2xl border border-border p-6 shadow-modal"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 20 }}
@@ -280,7 +279,7 @@ function ModalHeader({ title, onClose }: { title: string; onClose: () => void })
   return (
     <div className="flex items-center justify-between">
       <h2 className="text-[15px] font-extrabold text-text-primary">{title}</h2>
-      <button type="button" onClick={onClose} className="text-text-muted hover:text-text-primary transition-colors cursor-pointer">
+      <button type="button" aria-label="Close" onClick={onClose} className="text-text-muted hover:text-text-primary transition-colors cursor-pointer">
         <X size={16} />
       </button>
     </div>
@@ -313,9 +312,9 @@ function EmptyState({ onNew }: { onNew: () => void }) {
 // ── Skeleton ───────────────────────────────────────────────────
 function TeamGridSkeleton() {
   return (
-    <div className="grid grid-cols-3 gap-[14px]">
+    <div className="grid grid-cols-3 gap-3.5">
       {Array.from({ length: 3 }).map((_, i) => (
-        <div key={i} className="h-[160px] rounded-[12px] bg-surface border border-border animate-pulse" />
+        <div key={i} className="h-40 rounded-xl bg-surface border border-border animate-pulse" />
       ))}
     </div>
   );

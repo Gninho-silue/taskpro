@@ -1,5 +1,6 @@
 package com.example.taskpro.service;
 
+import com.example.taskpro.dto.comment.CommentBasicDTO;
 import com.example.taskpro.dto.label.LabelBasicDTO;
 import com.example.taskpro.dto.project.ProjectBasicDTO;
 import com.example.taskpro.dto.task.TaskBasicDTO;
@@ -26,6 +27,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -83,11 +85,26 @@ public class TaskService {
                             ));
         }
 
-        dto.setLabels(task.getLabels().stream()
+        dto.setLabels(new ArrayList<>(task.getLabels()).stream()
                 .map(label -> new LabelBasicDTO(
                         label.getId(),
                         label.getName(),
                         label.getColor()
+                ))
+                .collect(Collectors.toSet()));
+
+        dto.setComments(new ArrayList<>(task.getComments()).stream()
+                .map(c -> new CommentBasicDTO(
+                        c.getId(),
+                        c.getContent(),
+                        c.getCreatedAt(),
+                        c.getUpdatedAt(),
+                        c.getUser() != null ? new UserBasicDTO(
+                                c.getUser().getId(),
+                                c.getUser().getFirstname(),
+                                c.getUser().getLastname(),
+                                c.getUser().getEmail()
+                        ) : null
                 ))
                 .collect(Collectors.toSet()));
 

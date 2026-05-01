@@ -24,6 +24,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.stream.Collectors;
 
@@ -53,7 +54,7 @@ public class TeamService {
             ));
         }
 
-        dto.setMembers(team.getMembers().stream()
+        dto.setMembers(new ArrayList<>(team.getMembers()).stream()
                 .map(user -> new UserBasicDTO(
                         user.getId(),
                         user.getFirstname(),
@@ -62,7 +63,7 @@ public class TeamService {
                 ))
                 .collect(Collectors.toSet()));
 
-        dto.setProjects(team.getProjects().stream()
+        dto.setProjects(new ArrayList<>(team.getProjects()).stream()
                 .map(project -> new ProjectBasicDTO(
                         project.getId(),
                         project.getName(),
@@ -204,9 +205,9 @@ public class TeamService {
         return toDetailDto(findTeamOrThrow(id));
     }
 
-    public PageResponse<TeamBasicDTO> getAllTeams(int page, int size) {
+    public PageResponse<TeamDetailDTO> getAllTeams(int page, int size) {
         var pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-        var pageResult = teamRepository.findAll(pageable).map(teamMapper::toBasicDto);
+        var pageResult = teamRepository.findAll(pageable).map(this::toDetailDto);
         return PaginationUtil.buildPageResponse(pageResult);
     }
 
